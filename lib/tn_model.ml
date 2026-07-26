@@ -526,7 +526,11 @@ let atom_to_string = function
 
 (* --- checker instance --- *)
 
-module Checker = System.Make (Tn_state) (Tn_state.Local)
+(* The checker is now the presheaf-topos internal-logic denotation
+   ({!Denote}, lib/internal/DESIGN.md); [System] is retained as the
+   differential reduction oracle. Same interface, so [spec_of]/[Statements]
+   and the test wiring are unchanged. *)
+module Checker = Denote.Make (Tn_state) (Tn_state.Local)
 
 let spec_of mut =
   {

@@ -19,4 +19,5 @@
   (ocaml
    (>= 5.1))
   dune
-  alcotest))
+  alcotest
+  comp_cat))

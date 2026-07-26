@@ -1,4 +1,7 @@
+(include_subdirs unqualified)
+
 (library
  (name telcoin_epistemic)
+ (libraries comp_cat)
  (flags
   (:standard -w +a-4-9-40-41-42-44-45-70)))

@@ -1,5 +1,6 @@
 (tests
- (names t_formula t_kernel t_knowledge t_tn_model t_statements t_tn_mutation)
+ (names t_formula t_kernel t_knowledge t_tn_model t_statements t_tn_mutation
+  t_reduction t_reflection t_categorical)
  (libraries telcoin_epistemic alcotest)
  (flags
   (:standard -w +a-4-9-40-41-42-44-45-70)))
