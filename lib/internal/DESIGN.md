@@ -6,8 +6,13 @@ as the internal logic of a genuine presheaf topos, leveraging
 `comp-cat-ocaml`, exactly mirroring how `comp-cat-ocaml/lib/temporal/DESIGN.md`
 refounded Lamport TLA as the internal logic of the topos of trees.
 
+**STATUS: BUILT.** All eight bespoke modules (§5) exist under `lib/internal/`,
+`Tn_model.Checker` is `Denote.Make` (`tn_model.ml:533`), and all four test gates
+of §6 are green. The imperative voice below is retained as the spec of record;
+where an instruction has since been carried out this document says so inline.
+
 Repo: `~/Documents/telcoin-epistemic-ocaml`; own opam switch
-`telcoin-epistemic-ocaml` (OCaml 5.3.0, dune, alcotest). Build with
+`telcoin-epistemic-ocaml` (OCaml 5.3.0, dune, alcotest, comp_cat). Build with
 `dunecho build` / `dunecho test`. License dual MIT OR Apache (inherit).
 
 This spec is the OUTPUT of an 8-agent adversarial design workshop (2 independent
@@ -160,7 +165,9 @@ computes a right Kan extension that is NOT `knows`, and `K_i` breaks
 `E`-persistence, so it must live in `B`).
 
 For validator `i`: `f_i : reach → V_i`, `f_i(s) = local_of s i`
-(`tn_model.ml:535`; `Checker = System.Make(Tn_state)(Tn_state.Local)`). `~_i =`
+(`tn_model.ml:539`, the spec's `view`; `Checker = Denote.Make (Tn_state)
+(Tn_state.Local)` at `tn_model.ml:533`, with `System.Make` retained as the
+reduction oracle). `~_i =`
 kernel of `f_i` (an equivalence relation). The three base-change adjoints along
 `f_i` on `(P(reach),⊆) ⇄ (P(V_i),⊆)`:
 ```
@@ -208,7 +215,7 @@ no-op on persistent atoms and would leave `¬/→` hereditary).
 (induction over `Formula.t`; `is_true` is a homomorphism except at `imp/neg`,
 where `classical` restores it via the top/bot laws `imp(⊤,T)=T`, `imp(⊥,T)=⊤`,
 `neg(⊤)=⊥`, `neg(⊥)=⊤`). Define `valid_E φ := is_true (grade φ w0)` at the single
-initial world `w0 = initial` (`tn_model.ml:533`), `= (w0 ∈ sat φ) = valid sys φ`
+initial world `w0 = initial` (`tn_model.ml:537`), `= (w0 ∈ sat φ) = valid sys φ`
 (`system.ml:145`). Hence `prove`/`prove_nonvacuous` (`denote.ml`) return `Ok`
 exactly when the current kernel does: **S1–S7 re-verify unchanged, and each stays
 refuted under its model mutation.**
@@ -221,16 +228,17 @@ probe (§0.1.4, §6).
 
 ## 5. comp-cat reuse map + dune wiring  (workshop P5)
 
-telcoin-epistemic-ocaml does NOT currently depend on `comp_cat` (deps: ocaml,
-dune, alcotest). Wire it:
-- `opam pin add comp_cat ~/Documents/comp-cat-ocaml --yes` into the
-  `telcoin-epistemic-ocaml` switch (or a dune-workspace spanning both repos —
-  pin chosen for a clean reusable dep).
-- `lib/dune`: add `(libraries comp_cat)`. `comp_cat` is wrapped, so reference
+DONE: telcoin-epistemic-ocaml depends on `comp_cat`.
+- `dune-project` carries `(depends (ocaml (>= 5.1)) dune alcotest comp_cat)`, and
+  the switch has it pinned from `~/Documents/comp-cat-ocaml` (a dune-workspace
+  spanning both repos was the alternative; the pin was chosen for a clean
+  reusable dep).
+- `lib/dune` carries `(libraries comp_cat)`. `comp_cat` is wrapped, so reference
   `Comp_cat.Res`, `Comp_cat.Err`, `Comp_cat.Finset`, etc.
 - `lib/internal/` joins the existing flat `telcoin_epistemic` library via the
-  repo layout (no nested library). Verify no basename collisions with existing
-  `lib/*.ml` (frame/sieve/sub/basechange/fix/knows/reflect/denote are all new).
+  repo layout (no nested library; `lib/dune` sets `(include_subdirs
+  unqualified)`). No basename collisions with existing `lib/*.ml`
+  (frame/sieve/sub/basechange/fix/knows/reflect/denote are all new).
 
 **Consumed from comp_cat (all exist, none are sentinels):** `Comp_cat.Res` /
 `Comp_cat.Err` (the no-exceptions monad, mirrors the temporal core); `Comp_cat.Finset`
@@ -260,11 +268,11 @@ black-box internal-logic engine (its presheaf internal logic is unimplemented).
 8. `denote.ml/.mli` — `grade`, `sat`, `valid`, `satisfiable`, `prove`,
    `prove_nonvacuous` over `Formula.t`; the new LCF boundary (keep `Theorem.t`).
 
-Then re-point `Tn_model.Checker` (or `Statements.prove`) at `denote` — preferably
-via a functor over a `CHECKER` signature so `t_statements.ml`/`t_tn_mutation.ml`
-are unchanged. `system.ml` may be retained as the reduction ORACLE (the
-differential test compares `denote` against it) or deleted after the differential
-gate is green; keep it for the test.
+DONE: `Tn_model.Checker = Denote.Make (Tn_state) (Tn_state.Local)`
+(`tn_model.ml:533`); `spec_of`/`Statements` and the test wiring were unchanged.
+`system.ml` is RETAINED, not deleted: it is the reduction ORACLE in
+`t_reduction.ml:20` (`module Oracle = System.Make (Tn_state) (Tn_state.Local)`)
+and it remains the checker for all 26 isolated family models (`lib/*_model.ml`).
 
 ---
 
@@ -283,9 +291,9 @@ license inherited.
    `Ok` (`prove_nonvacuous`), and each flips to `Error (Refuted _)` under its
    paired `tn_model` mutation. 7 pins over 6 mutations — `Drop_batch_gate` pins
    two (S2 payload-availability and S7 honest-holders); the other five map
-   `Weak_quorum→S1/S4`, `No_support_check→S4`, `Unbounded_delay→S5`,
-   `Leader_censors_v2→S6`, `No_vote_once→S3` (verify the exact pairing against
-   the existing `t_tn_mutation.ml`).
+   `Weak_quorum→S1`, `No_vote_once→S3`, `No_support_check→S4`,
+   `Unbounded_delay→S5`, `Leader_censors_v2→S6` (pairing confirmed against
+   `t_tn_mutation.ml:53-69`).
 2. **Executable reduction gate (the D3 guardrail).** For every subformula of every
    `Si` and a spanning battery of hand formulas, assert
    `is_true (grade sys f s) = State_set.mem s (System.sat sys f)` at ALL reachable

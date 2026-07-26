@@ -1,8 +1,9 @@
 (** The "63 statements" meta-suite: every statement across the original
-    {!Tn_model}, the fourteen first-expansion family models and the forty-two
-    second-expansion family models proves on its pristine model, names are
-    unique, and the bucket distribution matches the spec exactly (security 23,
-    safety 20, liveness 14, fairness 6). The per-family suites hold the
+    {!Tn_model}, the fourteen first-expansion statements (over twelve isolated
+    family models) and the forty-two second-expansion statements (over fourteen
+    more) proves on its pristine model, names are unique, and the bucket
+    distribution matches the spec exactly (security 23, safety 20, liveness 14,
+    fairness 6). Twenty-seven models in all. The per-family suites hold the
     mutation pins; this suite only guards the aggregate shape. *)
 
 open Telcoin_epistemic

@@ -16,7 +16,7 @@
     model builder baked into [next] (a model with a livelock cycle will
     honestly refute [Af]).
 
-    [Theorem.t] is the kernel boundary: the only constructors are [prove] and
+    [Theorem.thm] is the kernel boundary: the only constructors are [prove] and
     [prove_nonvacuous], so possessing a theorem value is possession of a
     checked proof. *)
 
