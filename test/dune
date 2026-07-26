@@ -5,7 +5,14 @@
   t_identity t_identity_mutation t_unres t_unres_mutation t_swap t_swap_mutation
   t_catchup t_catchup_mutation t_stall t_stall_mutation t_reqres
   t_reqres_mutation t_revote t_revote_mutation t_admission t_admission_mutation
-  t_prefetch t_prefetch_mutation t_probe)
+  t_prefetch t_prefetch_mutation t_probe t_epoch_record t_epoch_record_mutation
+  t_epoch_sync t_epoch_sync_mutation t_epoch_close t_epoch_close_mutation
+  t_epoch_reward t_epoch_reward_mutation t_cert_envelope
+  t_cert_envelope_mutation t_exec_tip t_exec_tip_mutation t_exex_fanout
+  t_exex_fanout_mutation t_exex_life t_exex_life_mutation t_gossip_reject
+  t_gossip_reject_mutation t_own_durable t_own_durable_mutation t_pending_gc
+  t_pending_gc_mutation t_batch_verdict t_batch_verdict_mutation t_verif_prov
+  t_verif_prov_mutation t_discovery t_discovery_mutation)
  (libraries telcoin_epistemic alcotest)
  (flags
   (:standard -w +a-4-9-40-41-42-44-45-70)))

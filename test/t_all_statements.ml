@@ -1,16 +1,16 @@
-(** The "21 statements" meta-suite: every statement across the original
-    {!Tn_model} and the fourteen expansion family models proves on its
-    pristine model, names are unique, and the bucket distribution matches the
-    DESIGN spec exactly (security 7, safety 5, liveness 6, fairness 3). The
-    per-family suites hold the mutation pins; this suite only guards the
-    aggregate shape. *)
+(** The "63 statements" meta-suite: every statement across the original
+    {!Tn_model}, the fourteen first-expansion family models and the forty-two
+    second-expansion family models proves on its pristine model, names are
+    unique, and the bucket distribution matches the spec exactly (security 23,
+    safety 20, liveness 14, fairness 6). The per-family suites hold the
+    mutation pins; this suite only guards the aggregate shape. *)
 
 open Telcoin_epistemic
 
 let reports = All_statements.all ()
 
-let twenty_one () =
-  Alcotest.(check int) "exactly twenty-one statements" 21 (List.length reports)
+let sixty_three () =
+  Alcotest.(check int) "exactly sixty-three statements" 63 (List.length reports)
 
 let all_proved () =
   Alcotest.(check (list string))
@@ -20,7 +20,7 @@ let all_proved () =
        reports)
 
 let unique_names () =
-  Alcotest.(check int) "statement names are unique" 21
+  Alcotest.(check int) "statement names are unique" 63
     (List.length
        (List.sort_uniq String.compare
           (List.map (fun r -> r.Report.name) reports)))
@@ -35,7 +35,7 @@ let bucket_count b =
 
 let distribution () =
   Alcotest.(check (list int))
-    "bucket distribution security/safety/liveness/fairness" [ 7; 5; 6; 3 ]
+    "bucket distribution security/safety/liveness/fairness" [ 23; 20; 14; 6 ]
     (List.map bucket_count [ "security"; "safety"; "liveness"; "fairness" ])
 
 let () =
@@ -43,7 +43,7 @@ let () =
     [
       ( "meta",
         [
-          Alcotest.test_case "twenty-one" `Quick twenty_one;
+          Alcotest.test_case "sixty-three" `Quick sixty_three;
           Alcotest.test_case "all-proved" `Quick all_proved;
           Alcotest.test_case "unique-names" `Quick unique_names;
           Alcotest.test_case "distribution" `Quick distribution;
