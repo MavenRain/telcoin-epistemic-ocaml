@@ -1,6 +1,11 @@
 (tests
  (names t_formula t_kernel t_knowledge t_tn_model t_statements t_tn_mutation
-  t_reduction t_reflection t_categorical)
+  t_reduction t_reflection t_categorical t_all_statements t_ban t_ban_mutation
+  t_gossip_auth t_gossip_auth_mutation t_exec_tally t_exec_tally_mutation
+  t_identity t_identity_mutation t_unres t_unres_mutation t_swap t_swap_mutation
+  t_catchup t_catchup_mutation t_stall t_stall_mutation t_reqres
+  t_reqres_mutation t_revote t_revote_mutation t_admission t_admission_mutation
+  t_prefetch t_prefetch_mutation t_probe)
  (libraries telcoin_epistemic alcotest)
  (flags
   (:standard -w +a-4-9-40-41-42-44-45-70)))
