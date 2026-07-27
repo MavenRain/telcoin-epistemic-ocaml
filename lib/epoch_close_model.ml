@@ -923,8 +923,19 @@ let atom_to_string = function
   | Committee_chose_other -> "committee_chose_other"
   | Byz_fourth_vote -> "byz_fourth_vote"
 
-(** The exact CTLK checker over this family's ordered state and view. *)
-module Checker = System.Make (State) (View)
+(** The exact CTLK checker over this family's ordered state and view: the
+    presheaf-topos internal-logic denotation ({!Denote}, lib/internal/DESIGN.md),
+    with {!System} retained as the differential reduction oracle of this
+    family's topos gate (test/t_*_topos.ml).
+
+    This family's reachability relation is a PREORDER rather than a poset: it
+    models a mechanism that undoes itself, so two distinct states can be
+    mutually reachable and {!Frame.certify_functorial} refuses antisymmetry.
+    That is recorded in test/t_topos_frames.ml and it does not obstruct the
+    denotation: [W] is still a thin category, so parallel arrows are still
+    unique and presheaf restriction is still path-independent, and the
+    executable reduction gate is green on this family. *)
+module Checker = Denote.Make (State) (View)
 
 (** The checker spec under a mutation: single initial state, mutation-
     parameterized transitions, the single-agent view, the atom valuation. *)

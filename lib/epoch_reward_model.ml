@@ -624,8 +624,11 @@ let atom_to_string = function
   | Credit_blockless_agrees -> "credit_blockless_agrees"
   | Ledgers_equal -> "ledgers_equal"
 
-(** The exact CTLK checker over this family's ordered state and view. *)
-module Checker = System.Make (State) (View)
+(** The exact CTLK checker over this family's ordered state and view: the
+    presheaf-topos internal-logic denotation ({!Denote}, lib/internal/DESIGN.md),
+    with {!System} retained as the differential reduction oracle of this
+    family's topos gate (test/t_*_topos.ml). *)
+module Checker = Denote.Make (State) (View)
 
 (** The checker spec under a mutation: single initial state,
     mutation-parameterized transitions, the two-node view, the atom

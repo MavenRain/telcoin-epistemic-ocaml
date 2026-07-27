@@ -10,7 +10,15 @@
     mechanically proves the presheaf-topos denotation ({!Denote}) equals the
     original checker ({!System}) operator-by-operator — in particular it is
     what actually catches a wrong persistence direction (sec.0.1.2) or a
-    mis-seeded fixpoint; the pen-and-paper sec.4 argument is not enough. *)
+    mis-seeded fixpoint; the pen-and-paper sec.4 argument is not enough.
+
+    This is the SHARED MODEL's instance of the gate, kept hand-written because
+    it is the original D3 guardrail. The same obligation is owed by every
+    family model and is packaged as a functor in {!Topos_gate}, instantiated
+    once per family in test/t_<family>_topos.ml. That generalisation was not
+    ceremonial: every [tn_model] atom is monotone, which made this suite
+    structurally blind to the incomplete [Implies] reflection that the family
+    gates caught (DESIGN sec.4 correction). *)
 
 open Telcoin_epistemic
 

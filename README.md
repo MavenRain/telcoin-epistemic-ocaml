@@ -16,7 +16,8 @@ the checker itself as the internal logic of a presheaf topos.
 | statements | 63 - security 23, safety 20, liveness 14, fairness 6 (pinned in `test/t_all_statements.ml`) |
 | models | 27 - one shared `Tn_model` plus 26 isolated family models |
 | mutation pins | 61 gate deletions across the 27 models |
-| tests | 63 test executables, 584 cases, 0 failures; `dune build` clean, 0 warnings |
+| topos layer | all 27 checkers are the presheaf-topos denotation, each differentially gated against the original checker |
+| tests | 91 test executables, 821 cases, 0 failures; `dune build` clean, 0 warnings |
 | grounded against | telcoin-network at git `0c59c15b` |
 | license | MIT OR Apache-2.0 |
 
@@ -30,7 +31,8 @@ the checker itself as the internal logic of a presheaf topos.
 | `lib/<family>_model.ml`, `lib/<family>_statements.ml` | 26 isolated family models and the 56 statements over them |
 | `lib/all_statements.ml`, `lib/report.ml` | the flat 63-row cross-model report (theorems over different state types cannot share a list) |
 | `lib/internal/` | the CTLK checker refounded as the internal logic of a presheaf topos, plus `DESIGN.md`, the normative spec |
-| `test/` | kernel semantics, per-family suites, per-family mutation suites, the topos gates |
+| `test/topos_gate.ml`, `test/topos_laws.ml` | the two reusable gate functors every model is put through: the poset certificate plus the `Denote` against `System` differential, and the categorical laws on a real frame |
+| `test/` | kernel semantics, per-family proof suites, per-family mutation suites, per-family topos gates, and the two cross-model topos suites |
 
 ## The logic
 
@@ -91,7 +93,7 @@ model of telcoin-network would cross-perturb: a gate added for the epoch
 machinery would change what a worker knows about a batch.
 
 The architecture is therefore one lean model per mechanism family. Each family
-is its own `System.Make (State) (View)` instance with its own state type, its
+is its own `Denote.Make (State) (View)` instance with its own state type, its
 own atom vocabulary, its own `make () : (_ Checker.t, Empty_init) result` and
 its own `mutation` sum type. Families cannot interfere, mutation pins stay
 attributable, and reachable sets stay in the tens of states, where the checker
@@ -271,7 +273,7 @@ is `lib/internal/DESIGN.md`.
 | `fix` | Knaster-Tarski fixpoints over the finite lattice `P(reach)` |
 | `knows` | `K_i = f_i^* . Pi_{f_i}`, the lex-idempotent S5 comonad over the discrete base |
 | `reflect` | the classical (not-not) reflection bridge from the intuitionistic `Omega` into the Boolean base |
-| `denote` | the graded denotation of `Formula.t` and the kernel, exposing the same interface as `System.Make` |
+| `denote` | the graded denotation of `Formula.t` and the kernel, exposing the same interface as `System.Make`, so a model re-points at it by changing one line |
 
 Two toposes, one checker. `E = [W^op, Set]` is the intuitionistic home where
 `AG` and all invariant content are native subobjects of `1_E`; persistence
@@ -284,10 +286,11 @@ classical logic, its existential path modalities and its cross-cutting `K_i` are
 not intuitionistically internal to `E`, and knowledge in particular breaks
 `E`-persistence.
 
-`Tn_model.Checker` is `Denote.Make (Tn_state) (Tn_state.Local)`
-(`lib/tn_model.ml:533`), so the original seven statements are proved through the
-topos denotation. The 26 family models remain on `System.Make`, which is also
-retained as the differential oracle.
+**Every one of the 27 models runs on this layer.** Each `<family>_model.ml`
+declares `module Checker = Denote.Make (State) (View)`, so all 63 statements are
+proved through the topos denotation rather than through `System.Make` directly.
+`System` is retained, and its role grew rather than shrank: it is now the
+differential oracle against which each of the 27 denotations is checked.
 
 **The correctness of this layer rests on an executable gate, not on assertion.**
 The reduction theorem is
@@ -296,17 +299,34 @@ The reduction theorem is
 is_true (Denote.grade sys phi s) = State_set.mem s (System.sat oracle phi)
 ```
 
-and `test/t_reduction.ml` checks exactly that, at every reachable state, for
-every subformula of all seven statements and their antecedents plus a hand
-battery spanning every `Formula.t` constructor, over the pristine model and all
-six mutants. The pen-and-paper argument in `DESIGN.md` sec.4 is not treated as
-sufficient: the executable gate is what actually catches a wrong persistence
-direction or a mis-seeded fixpoint. Two further gates back it up:
-`test/t_reflection.ml` supplies a synthetic frame with a genuinely sieve-graded
-`Ag p`, because the classical reflection is a no-op on the seven statements and
-would otherwise be green by vacuity; `test/t_categorical.ml` asserts the
-categorical laws positively and pairs each with a deliberately wrong operator
-that violates the same law.
+and it is checked per model, at every reachable state, for every subformula of
+every statement and antecedent plus a battery spanning every `Formula.t`
+constructor, under the pristine model and every one of its mutations.
+`test/t_reduction.ml` is the hand-written instance for the shared model;
+`test/topos_gate.ml` packages the same obligation as a functor and each of the
+26 `test/t_<family>_topos.ml` suites instantiates it. A family's gate builds
+both checkers itself from the raw spec fields, so it can never be handed a
+system built by the checker it is auditing.
+
+Generalising the layer from one model to 27 is what made the gate bite. The
+first build reflected only the antecedent of an implication, so `Denote` read
+`p -> q` at a world as "if `p` here then `q` at every future world". That
+coincides with the classical reading exactly when `q` denotes a future-closed
+set. Every atom of the shared model is monotone, so the shared model could not
+tell the difference and its gate was green over 141 worlds and seven mutants.
+Four family models, whose atoms can go false again because a ban expires or a
+pending map is released, exhibited concrete disagreeing worlds. The fix is to
+reflect both arguments; `DESIGN.md` sec.4 carries the correction and the
+provenance section records the lesson, which is that a differential gate is
+only as strong as the diversity of models it runs on.
+
+Three further gates back the reduction up:
+
+| gate | what it establishes |
+|---|---|
+| `test/t_topos_frames.ml` | `Frame.certify_functorial` over all 27 models, classification pinned in both directions: 23 frames are posets, 4 are preorders because they model mechanisms that undo themselves. A preorder is still a thin category, so parallel arrows stay unique and the presheaf topos is intact; the reduction gate is green on all four. The test fails if any model changes class |
+| `test/t_topos_laws.ml` | the Galois adjunctions, the `K_i` S5 comonad laws, `C_G` convergence, the `AX`/`EX` duality and the `Sub(1_E)` Heyting laws, run on all 27 REAL frames with witnesses drawn from each model's own statements, plus non-degeneracy counters so a frame on which the operators do nothing cannot buy a green verdict |
+| `test/t_reflection.ml`, `test/t_categorical.ml` | the synthetic half: a frame with a genuinely sieve-graded `Ag p` (the classical reflection is a no-op on the shared model's seven statements, though it is load-bearing on all 26 families), and each categorical law paired with a deliberately wrong operator that violates it |
 
 ## Confirm-by-mutation
 
@@ -406,17 +426,24 @@ dune build && dune test
 ```
 
 Dune caches test results, so use `dune test --force` to see every case run. The
-current tree builds with 0 errors and 0 warnings, and runs 63 test executables /
-584 cases with 0 failures:
+current tree builds with 0 errors and 0 warnings, and runs 91 test executables /
+821 cases with 0 failures:
 
 | suites | what they cover |
 |---|---|
 | `t_formula`, `t_kernel`, `t_knowledge` | temporal semantics on toy graphs and knowledge under hidden state, each positive row paired with a negative row (including the muddy-children announcement pair) |
-| `t_reduction`, `t_reflection`, `t_categorical` | gates 2-4 of the four-gate test oracle in `DESIGN.md` sec.6; gate 1, the statements gate, is `t_statements` |
+| `t_reduction`, `t_reflection`, `t_categorical` | gates 2-4 of the seven-gate test oracle in `DESIGN.md` sec.6; gate 1, the statements gate, is `t_statements` |
 | `t_tn_model`, `t_statements`, `t_tn_mutation` | the shared model, its seven proofs, and its seven pins over six mutations (`Drop_batch_gate` pins two statements) |
 | `t_<family>`, `t_<family>_mutation` (26 pairs) | each family's proofs, reachable-set bands and exact counts, plus its pins |
+| `t_<family>_topos` (26) | gate 5: per family, the `Denote` against `System` differential at every reachable world under every mutation, the poset certificate, and the reflection non-vacuity witness |
+| `t_topos_frames`, `t_topos_laws` | gates 6 and 7: the frame classification pinned across all 27 models, and the categorical laws run on all 27 real frames with non-degeneracy counters |
 | `t_all_statements` | the meta-suite: exactly 63 statements, all proved, names unique, bucket distribution `[23; 20; 14; 6]` |
 | `t_probe` | an ad-hoc satisfiability probe kept for model exploration |
+
+Two suites are slow and dominate a full run: `t_reduction` (the shared model's
+141 worlds against 259 formulas over seven mutants) takes tens of minutes, and
+`t_topos_laws` takes roughly nine. The 26 per-family topos gates are each under
+a tenth of a second, because family frames are small by design.
 
 ## Limits and scope
 
@@ -458,9 +485,13 @@ Read this section before quoting anything above.
   load-bearing for the statement in the model, and the sibling-repair sweeps
   argue that no other real code path repairs the deletion. It is not a proof
   that the real system has no such path.
-- **The topos layer covers one model.** The reduction gate compares `Denote`
-  against `System` over the shared model's formulas and mutants. The 26 family
-  models run on `System.Make` directly.
+- **The topos layer covers every model, but the gate is not exhaustive.** All 27
+  checkers are `Denote.Make`, and each is differentially checked against
+  `System` over its own statements plus a constructor-spanning battery, at every
+  reachable world, under every mutation. That is a large and diverse sample of
+  formulas, not a proof for all formulas: the gate compares the two checkers on
+  the formulas it is given. It found a real divergence once, which is the reason
+  to state its limits plainly rather than to treat green as equivalence.
 - **Small state spaces.** Reachable sets run from 5 to 141 states. That is what
   makes exact checking and hand-reading possible, and it is also the reason no
   claim here scales to real committee sizes, long epoch sequences or realistic

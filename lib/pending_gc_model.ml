@@ -704,8 +704,11 @@ let atom_to_string = function
   | Missing_reported -> "missing_computed(v->a,c)"
   | Vote_issued -> "vote_issued(v->a)"
 
-(** The exact CTLK checker over this family's ordered state and view. *)
-module Checker = System.Make (State) (View)
+(** The exact CTLK checker over this family's ordered state and view: the
+    presheaf-topos internal-logic denotation ({!Denote}, lib/internal/DESIGN.md),
+    with {!System} retained as the differential reduction oracle of this
+    family's topos gate (test/t_*_topos.ml). *)
+module Checker = Denote.Make (State) (View)
 
 (** The checker spec under a mutation: the two initial states (the frozen peer
     branch), mutation-parameterized transitions, the four-role view projection,

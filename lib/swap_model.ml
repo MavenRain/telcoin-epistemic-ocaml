@@ -444,8 +444,11 @@ let initial =
 
 (* --- checker instance --- *)
 
-(** The kernel instance for this family. *)
-module Checker = System.Make (State) (View)
+(** The exact CTLK checker over this family's ordered state and view: the
+    presheaf-topos internal-logic denotation ({!Denote}, lib/internal/DESIGN.md),
+    with {!System} retained as the differential reduction oracle of this
+    family's topos gate (test/t_*_topos.ml). *)
+module Checker = Denote.Make (State) (View)
 
 (** The spec under a mutation. *)
 let spec_of mut =

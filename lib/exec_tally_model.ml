@@ -304,8 +304,11 @@ let atom_to_string = function
   | All_honest_saved -> "all-honest-saved"
   | In_tally v -> "in-tally(" ^ Validator.to_string v ^ ")"
 
-(** The exact CTLK checker over this family's ordered state and view. *)
-module Checker = System.Make (State) (View)
+(** The exact CTLK checker over this family's ordered state and view: the
+    presheaf-topos internal-logic denotation ({!Denote}, lib/internal/DESIGN.md),
+    with {!System} retained as the differential reduction oracle of this
+    family's topos gate (test/t_*_topos.ml). *)
+module Checker = Denote.Make (State) (View)
 
 (** The checker spec under a mutation: single initial state, mutation-
     parameterized transitions, observer-only view, atom valuation. *)

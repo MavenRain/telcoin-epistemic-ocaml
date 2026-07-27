@@ -12,7 +12,14 @@
   t_exex_fanout_mutation t_exex_life t_exex_life_mutation t_gossip_reject
   t_gossip_reject_mutation t_own_durable t_own_durable_mutation t_pending_gc
   t_pending_gc_mutation t_batch_verdict t_batch_verdict_mutation t_verif_prov
-  t_verif_prov_mutation t_discovery t_discovery_mutation)
+  t_verif_prov_mutation t_discovery t_discovery_mutation t_ban_topos
+  t_batch_verdict_topos t_catchup_topos t_cert_envelope_topos t_discovery_topos
+  t_epoch_record_topos t_epoch_reward_topos t_exec_tally_topos t_exec_tip_topos
+  t_exex_life_topos t_gossip_auth_topos t_identity_topos t_gossip_reject_topos
+  t_own_durable_topos t_pending_gc_topos t_prefetch_topos t_reqres_topos
+  t_revote_topos t_stall_topos t_swap_topos t_unres_topos t_verif_prov_topos
+  t_topos_frames t_admission_topos t_epoch_close_topos t_epoch_sync_topos
+  t_exex_fanout_topos t_topos_laws)
  (libraries telcoin_epistemic alcotest)
  (flags
   (:standard -w +a-4-9-40-41-42-44-45-70)))

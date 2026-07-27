@@ -94,8 +94,18 @@ module Make (State : System.ORDERED) (View : System.ORDERED) = struct
           let gp = g p in
           fun s -> Sv.neg t s (reflect t s (gp s))
       | Formula.Implies (l, r) ->
+          (* BOTH arguments are reflected, not only the antecedent. With an
+             unreflected consequent, [Sv.imp] reads [l -> r] at [s] as "if l
+             holds at s then r holds at EVERY future world", which coincides
+             with the classical reading only when [r] happens to denote a
+             future-closed set. That is true of every [tn_model] atom (they
+             are all monotone) and false as soon as a model has an atom that
+             can go false again - a ban that expires, a pending map that is
+             released, a fetch that completes - so the incomplete repair was
+             invisible on the shared model and diverged on the family models
+             (DESIGN sec.4). *)
           let gl = g l and gr = g r in
-          fun s -> Sv.imp t s (reflect t s (gl s)) (gr s)
+          fun s -> Sv.imp t s (reflect t s (gl s)) (reflect t s (gr s))
       | Formula.Ag _ ->
           (* AG's native graded Sub(1_E) reading (DESIGN sec.1, sec.2). *)
           let b = bset t f in

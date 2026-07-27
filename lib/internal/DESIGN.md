@@ -6,10 +6,18 @@ as the internal logic of a genuine presheaf topos, leveraging
 `comp-cat-ocaml`, exactly mirroring how `comp-cat-ocaml/lib/temporal/DESIGN.md`
 refounded Lamport TLA as the internal logic of the topos of trees.
 
-**STATUS: BUILT.** All eight bespoke modules (§5) exist under `lib/internal/`,
-`Tn_model.Checker` is `Denote.Make` (`tn_model.ml:533`), and all four test gates
-of §6 are green. The imperative voice below is retained as the spec of record;
-where an instruction has since been carried out this document says so inline.
+**STATUS: BUILT, AND APPLIED TO EVERY MODEL.** All eight bespoke modules (§5)
+exist under `lib/internal/`; **all 27 models** in the library instantiate
+`Denote.Make` as their `Checker`, not only the shared `Tn_model`; and all seven
+test gates of §6 are green. The imperative voice below is retained as the spec
+of record; where an instruction has since been carried out this document says
+so inline.
+
+Generalising the layer from 1 model to 27 was not a formality: it falsified the
+§4 reflection rule as originally written (see the correction box in §4) by
+exhibiting concrete worlds where `is_true ∘ grade ≠ sat`. The shared model
+could not have found it. That is the single most important fact in this
+document's history and it is why §6 now has a per-family gate.
 
 Repo: `~/Documents/telcoin-epistemic-ocaml`; own opam switch
 `telcoin-epistemic-ocaml` (OCaml 5.3.0, dune, alcotest, comp_cat). Build with
@@ -101,6 +109,19 @@ type 'x obj = { sections : state -> 'x list;
 `restrict s s'` is defined on one-step edges and extended along ⊑-paths by
 composition; path-independence holds (poset ⇒ all parallel arrows equal) and is
 checked by a finite `commutes ~upto` certificate (`trees.ml:13` analogue).
+
+> **Scope note (2026-07-26).** The paragraph above is about `tn_model`, whose
+> reachability really is a partial order. Of the 27 models now carrying this
+> layer, 23 certify as posets and 4 (`admission`, `epoch_close`, `epoch_sync`,
+> `exex_fanout`) are PREORDERS: they model mechanisms that undo themselves, so
+> two distinct states are mutually reachable and `certify_functorial` refuses
+> antisymmetry. This does not break anything here. Path-independence needs only
+> that `W` be THIN (at most one arrow per ordered pair), which a preorder
+> satisfies; antisymmetry additionally makes `W` skeletal, i.e. no two distinct
+> objects isomorphic. `[W^op, Set]` is a presheaf topos over any small category,
+> and because `is_true` is membership (`sieve.ml`) rather than sieve equality,
+> the reduction is insensitive to the difference. `t_topos_frames.ml` pins which
+> models are in which class.
 Terminal `1`: `sections s = [()]`.
 
 **Sieve-Ω** (built BY HAND — comp-cat's `omega_via_ran`/`power`/`exists` are
@@ -165,9 +186,10 @@ computes a right Kan extension that is NOT `knows`, and `K_i` breaks
 `E`-persistence, so it must live in `B`).
 
 For validator `i`: `f_i : reach → V_i`, `f_i(s) = local_of s i`
-(`tn_model.ml:539`, the spec's `view`; `Checker = Denote.Make (Tn_state)
-(Tn_state.Local)` at `tn_model.ml:533`, with `System.Make` retained as the
-reduction oracle). `~_i =`
+(the spec's `view` in `tn_model.ml`; `Checker = Denote.Make (Tn_state)
+(Tn_state.Local)` there, and `Denote.Make (State) (View)` in each of the 26
+family models, with `System.Make` retained as the reduction oracle for all of
+them). `~_i =`
 kernel of `f_i` (an equivalence relation). The three base-change adjoints along
 `f_i` on `(P(reach),⊆) ⇄ (P(V_i),⊆)`:
 ```
@@ -202,13 +224,29 @@ the canonical one.
 **Bridge** (`reflect.ml`, `temporal_eval.ml:29-30` analogue):
 `classical v = if is_true v then ⊤ else ⊥`, applied to the Ω-VALUE of the
 argument during per-world graded evaluation, RECURSIVELY, at every `Not` node and
-every `Implies`-antecedent (structural, like `temporal_eval` `V_neg`/`V_impl`).
-NOT `¬¬` (which reflects the wrong way). NOT a subobject-level operator (that is a
-no-op on persistent atoms and would leave `¬/→` hereditary).
+at BOTH arguments of every `Implies` (structural, like `temporal_eval`
+`V_neg`/`V_impl`). NOT `¬¬` (which reflects the wrong way). NOT a
+subobject-level operator (that is a no-op on persistent atoms and would leave
+`¬/→` hereditary).
+
+> **Correction, 2026-07-26 (found by generalising the layer to all 27 models).**
+> The first build reflected only the `Implies`-ANTECEDENT, and §4 specified only
+> that. With an unreflected consequent, `imp` reads `φ → ψ` at `s` as
+> "if `φ` at `s` then `ψ` at EVERY world of `↑s`", which coincides with the
+> classical reading only when `⟦ψ⟧` happens to be future-closed. Every
+> `tn_model` atom is monotone (§1: `label` monotone), so the shared model could
+> not see it and `t_reduction.ml` was green for 141 worlds × 7 mutants. It is
+> false as soon as a model has an atom that can go false again: a ban that
+> expires, a pending map that is released, a fetch that completes. Four family
+> models (`own_durable`, `pending_gc`, `stall`, plus the preorder frames)
+> exhibited concrete disagreeing worlds. Reflecting BOTH arguments restores the
+> reduction: with `A,B ∈ {↑s, ∅}`, `is_true (imp A B) = (φ(s) ⟹ ψ(s))` by the
+> top/bot laws, exactly the Boolean reading.
 
 **Graded evaluator `grade : Formula.t → state → Ω`** (`denote.ml`, bottom-up):
 `Atom a` → `character ⟦a⟧`; `And/Or` → `Ω.meet/join`, no reflection;
-`Not φ` → `neg (classical (grade φ s))`; `Implies(φ,ψ)` → `imp (classical (grade φ s)) (grade ψ s)`;
+`Not φ` → `neg (classical (grade φ s))`;
+`Implies(φ,ψ)` → `imp (classical (grade φ s)) (classical (grade ψ s))`;
 `AX..EU` → §2 in `B`, no reflection; `K/Everyone/Common` → §3 in `B`, no reflection.
 
 **Reduction theorem.** By §0.1.3, `is_true (grade φ s) = (s ∈ sat φ)` for all `φ,s`
@@ -221,8 +259,12 @@ exactly when the current kernel does: **S1–S7 re-verify unchanged, and each st
 refuted under its model mutation.**
 
 Where reflection is load-bearing vs no-op: on S1–S7 it is a NO-OP (all
-antecedents/¬-args crisp two-valued), so it is exercised only by the synthetic
-probe (§0.1.4, §6).
+antecedents/¬-args crisp two-valued), so on the shared model it is exercised
+only by the synthetic probe (§0.1.4, §6). That is a fact about `tn_model`, not
+about the bridge: on all 26 family models the per-family gate's
+`reflection_load_bearing` flag is TRUE, i.e. deleting `classical` changes a
+verdict on the family's own formulas. The synthetic probe is still needed for
+`tn_model` and is still the confirm-by-mutation witness of the deletion.
 
 ---
 
@@ -269,10 +311,23 @@ black-box internal-logic engine (its presheaf internal logic is unimplemented).
    `prove_nonvacuous` over `Formula.t`; the new LCF boundary (keep `Theorem.t`).
 
 DONE: `Tn_model.Checker = Denote.Make (Tn_state) (Tn_state.Local)`
-(`tn_model.ml:533`); `spec_of`/`Statements` and the test wiring were unchanged.
-`system.ml` is RETAINED, not deleted: it is the reduction ORACLE in
-`t_reduction.ml:20` (`module Oracle = System.Make (Tn_state) (Tn_state.Local)`)
-and it remains the checker for all 26 isolated family models (`lib/*_model.ml`).
+(`tn_model.ml`); `spec_of`/`Statements` and the test wiring were unchanged.
+
+DONE (2026-07-26): **ALL 27 models** now instantiate `Denote.Make`, not just
+the shared one. Each `lib/<family>_model.ml` carries
+`module Checker = Denote.Make (State) (View)`, so every one of the 63
+statements is proved through the topos denotation. The re-point is a drop-in
+because `Denote.Make` exposes `System.Make`'s interface plus the graded
+surface.
+
+`system.ml` is RETAINED, not deleted, and its role is now larger: it is the
+differential reduction ORACLE for every model. `t_reduction.ml` keeps the
+hand-written `tn_model` instance; `test/topos_gate.ml` packages the same
+obligation as a functor, and `test/t_<family>_topos.ml` instantiates it once
+per family, over that family's own statements plus a spanning constructor
+battery, under pristine plus every one of its mutations. A family's gate
+builds BOTH checkers itself from the raw spec fields, so it can never be
+handed a system built by the checker it is auditing.
 
 ---
 
@@ -286,7 +341,7 @@ carries a doc comment naming its topos/FHMV/TLA source; `List`/`Array`
 combinators over hand recursion; flat namespace, globally-unique basenames; dual
 license inherited.
 
-**Test oracle (four gates, all must be green):**
+**Test oracle (seven gates, all must be green):**
 1. **Statements gate.** `Statements.prove_all` over the new `denote`: all 7 return
    `Ok` (`prove_nonvacuous`), and each flips to `Error (Refuted _)` under its
    paired `tn_model` mutation. 7 pins over 6 mutations — `Drop_batch_gate` pins
@@ -313,6 +368,31 @@ license inherited.
    convergence bound (`≤ |reach|`); the μ-vs-ν seed correctness (seed `AF` at ⊤
    instead of ∅ ⇒ `AF` collapses to ⊤, a paired test must catch it).
 
+5. **Per-family reduction gates** (`test/topos_gate.ml` + 26 × `t_<family>_topos.ml`).
+   Gate 2 generalised: the same `is_true ∘ grade = System.sat` differential, run
+   for every family over its own statements' subformulas plus a battery spanning
+   every `Formula.t` constructor, at every reachable world, under pristine and
+   every mutation. This is the gate that found the incomplete `Implies` repair
+   (§4 correction); the shared model structurally could not.
+6. **Frame classification** (`test/t_topos_frames.ml`). `Frame.certify_functorial`
+   over all 27 models, with the outcome PINNED in both directions: 23 frames are
+   posets, 4 (`admission`, `epoch_close`, `epoch_sync`, `exex_fanout`) are
+   preorders, because they model mechanisms that undo themselves and so make two
+   distinct states mutually reachable. A preorder is still a thin category, so
+   parallel `W`-arrows are still unique, presheaf restriction is still
+   path-independent, and `[W^op, Set]` is still a topos; antisymmetry buys
+   skeletality, not soundness, and the reduction gate is green on all four. The
+   test fails if a frame changes class in either direction.
+7. **Categorical laws on the REAL frames** (`test/topos_laws.ml` +
+   `t_topos_laws.ml`). Gate 4 asks whether the operators obey their laws; this
+   asks whether the frames the library actually reasons over are legitimate
+   homes for them. The Galois adjunctions, the `K_i` S5 comonad laws, `C_G`
+   convergence, the `AX`/`EX` duality and the `Sub(1_E)` Heyting laws, run over
+   all 27 models with witness subsets drawn from each model's own statements,
+   plus non-degeneracy counters so a frame on which the operators do nothing
+   cannot buy a green verdict. Witness lists are capped (12, and 3 for the `C_G`
+   fixpoint laws) and the cap is REPORTED in the verdict, not applied silently.
+
 Gotcha (from the temporal build): first cold `dunecho test` may time out on
 alcotest warmup; run `./_build/default/test/t_NAME.exe` directly, or re-run.
 
@@ -336,3 +416,17 @@ alcotest warmup; run `./_build/default/test/t_NAME.exe` directly, or re-run.
   probe or it is green-by-vacuity (P4/P6 HIGH).
 - **The reduction needs an EXECUTABLE differential gate** (`is_true ∘ grade =
   sat`), not just an operator-by-operator argument (P6 HIGH).
+- **One model is not enough to exercise that gate** (found 2026-07-26, by
+  generalising the layer from 1 model to 27). Every `tn_model` atom is
+  monotone, so the incomplete `Implies` repair (§4 correction) was invisible on
+  the shared model across 141 worlds × 259 formulas × 7 mutants. The blindness
+  was structural, not statistical: no quantity of additional `tn_model`
+  formulas would have exposed it, because the counterexample needs an atom that
+  can go false again. A differential gate is only as strong as the diversity of
+  the models it runs on.
+- **Antisymmetry is not a soundness precondition** (same round). Four family
+  frames are preorders, not posets. A preorder is still thin, so parallel
+  `W`-arrows are still unique and §1's path-independence argument survives;
+  antisymmetry buys skeletality. The reduction gate is green on all four, so
+  they carry the denotation like the other 23, and `t_topos_frames.ml` pins the
+  classification instead of excluding them.

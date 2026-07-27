@@ -1,11 +1,16 @@
 (** The graded denotation of {!Formula} in the presheaf topos, and the LCF
     proof kernel (DESIGN sec.4). This is the new checker boundary: it exposes
-    the SAME interface as {!System.Make} (so {!Tn_model.Checker} re-points at
-    it with no change to the statement or test wiring) plus the
-    topos-internal graded surface.
+    the SAME interface as {!System.Make} (so a model module re-points at it by
+    changing one line, with no change to the statement or test wiring) plus
+    the topos-internal graded surface.
 
-    [grade φ s ∈ Ω(s)] is the bottom-up Alexandrov evaluation; [Not] and
-    [Implies] carry the classical {!Reflect} bridge; the temporal and
+    ALL 27 models in the library are instances of this functor, and each is
+    differentially gated against {!System} at every reachable world:
+    test/t_reduction.ml for the shared model, test/t_<family>_topos.ml for
+    each family.
+
+    [grade φ s ∈ Ω(s)] is the bottom-up Alexandrov evaluation; [Not] and both
+    arguments of [Implies] carry the classical {!Reflect} bridge; the temporal and
     epistemic fragments read the Boolean base [B] ({!Basechange}, {!Fix},
     {!Knows}); [AG] additionally exposes its native graded [Sub(1_E)] reading.
     By the reduction theorem (DESIGN sec.0.1.3) [is_true (grade φ s) =

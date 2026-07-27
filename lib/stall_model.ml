@@ -598,8 +598,11 @@ let atom_to_string = function
 
 (* --- checker instance --- *)
 
-(** The exact CTLK checker over this family's finite interpreted system. *)
-module Checker = System.Make (State) (View)
+(** The exact CTLK checker over this family's ordered state and view: the
+    presheaf-topos internal-logic denotation ({!Denote}, lib/internal/DESIGN.md),
+    with {!System} retained as the differential reduction oracle of this
+    family's topos gate (test/t_*_topos.ml). *)
+module Checker = Denote.Make (State) (View)
 
 (** The spec under a mutation: single initial state, mutation-parameterized
     transitions, victim-only views, the atom valuation. *)

@@ -417,9 +417,11 @@ let atom_to_string = function
   | Held j -> "held(" ^ responder_to_string j ^ ")"
   | At_done -> "done"
 
-(* The kernel instance for this family: exact CTLK checking over the
-   reqres reachable graph (16 states pristine). *)
-module Checker = System.Make (State) (View)
+(** The exact CTLK checker over this family's ordered state and view: the
+    presheaf-topos internal-logic denotation ({!Denote}, lib/internal/DESIGN.md),
+    with {!System} retained as the differential reduction oracle of this
+    family's topos gate (test/t_*_topos.ml). *)
+module Checker = Denote.Make (State) (View)
 
 (* The spec under a chosen gate deletion. *)
 let spec_of mut = { Checker.init = [ initial ]; next = next_with mut; view; label }

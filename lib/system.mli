@@ -18,7 +18,14 @@
 
     [Theorem.thm] is the kernel boundary: the only constructors are [prove] and
     [prove_nonvacuous], so possessing a theorem value is possession of a
-    checked proof. *)
+    checked proof.
+
+    Every model in the library now runs its proofs through the presheaf-topos
+    denotation {!Denote} instead of calling this checker directly. This module
+    is not obsolete: it is the independent ORACLE the denotation is
+    differentially checked against, world by world, in test/t_reduction.ml and
+    in each test/t_<family>_topos.ml. Keeping a second, simpler implementation
+    of the same semantics is what makes that gate meaningful. *)
 
 module type ORDERED = sig
   type t

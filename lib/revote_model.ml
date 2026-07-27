@@ -361,8 +361,11 @@ let atom_to_string = function
   | Cert_in_v1_dag -> "cert-in-v1-dag(v3/r0)"
   | At_done -> "done"
 
-(** The checker instance on the shared LCF kernel. *)
-module Checker = System.Make (State) (View)
+(** The exact CTLK checker over this family's ordered state and view: the
+    presheaf-topos internal-logic denotation ({!Denote}, lib/internal/DESIGN.md),
+    with {!System} retained as the differential reduction oracle of this
+    family's topos gate (test/t_*_topos.ml). *)
+module Checker = Denote.Make (State) (View)
 
 (** The spec under a mutation: single initial state, mutation-parameterized
     transitions, the V1-only view, the atom valuation. *)
