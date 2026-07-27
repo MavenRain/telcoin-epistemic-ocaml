@@ -301,7 +301,16 @@ end
 let view v s =
   match v with
   | Validator.V0 -> View_author (obs_of_leg s.leg1, obs_of_leg s.leg2, s.verdict)
-  | Validator.V1 | Validator.V2 | Validator.V3 -> View_idle
+  | Validator.V1
+  | Validator.V2
+  | Validator.V3
+  | Validator.V4
+  | Validator.V5
+  | Validator.V6
+  | Validator.V7
+  | Validator.V8
+  | Validator.V9 ->
+      View_idle
 
 (** Gate deletions for the confirm-by-mutation tests. *)
 type mutation =

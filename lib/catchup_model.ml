@@ -179,6 +179,10 @@ module View = struct
   let compare = local_compare
 end
 
+(* This model's committee stays the original four validators; the global
+   roster is now the ten-member tn_model committee. *)
+let roster = [ Validator.V0; Validator.V1; Validator.V2; Validator.V3 ]
+
 (** The lag victim V2: the only knowledge agent of this family. *)
 let victim = Validator.V2
 
@@ -206,7 +210,7 @@ let initial =
     locals =
       List.fold_left
         (fun acc v -> Validator_map.add v local_empty acc)
-        Validator_map.empty Validator.all;
+        Validator_map.empty roster;
   }
 
 (** Gate deletion for the confirm-by-mutation pin. [Drop_catch_up] deletes
@@ -230,13 +234,13 @@ type mutation = Pristine | Drop_catch_up
     Deliver R0 transition) and conservatively lists everyone. *)
 let proposers_of r lag =
   match r with
-  | R0 -> Validator.all
+  | R0 -> roster
   | R1 | R2 -> (
       match lag with
-      | Lag_unchosen -> Validator.all
-      | No_lag -> Validator.all
+      | Lag_unchosen -> roster
+      | No_lag -> roster
       | Lag_v2 ->
-          List.filter (fun v -> Bool.not (Validator.equal v victim)) Validator.all)
+          List.filter (fun v -> Bool.not (Validator.equal v victim)) roster)
 
 (** Propose round [r]: each proposer's [proposer_round] advances to [r]
     (Proposer emitting its next header, proposer.rs:642-652). *)
@@ -292,7 +296,7 @@ let deliver r state =
       List.map
         (fun lag ->
           {
-            (deliver_to Validator.all (round_certs R0 state) state) with
+            (deliver_to roster (round_certs R0 state) state) with
             lag;
             phase = Propose R1;
           })
@@ -300,15 +304,15 @@ let deliver r state =
   | R1 ->
       let receivers =
         match state.lag with
-        | Lag_unchosen -> Validator.all
-        | No_lag -> Validator.all
+        | Lag_unchosen -> roster
+        | No_lag -> roster
         | Lag_v2 ->
-            List.filter (fun v -> Bool.not (Validator.equal v victim)) Validator.all
+            List.filter (fun v -> Bool.not (Validator.equal v victim)) roster
       in
       [ { (deliver_to receivers (round_certs R1 state) state) with phase = Propose R2 } ]
   | R2 ->
       let broadcast =
-        { (deliver_to Validator.all (round_certs R2 state) state) with phase = Catch_up }
+        { (deliver_to roster (round_certs R2 state) state) with phase = Catch_up }
       in
       let repaired =
         match broadcast.lag with
@@ -351,7 +355,7 @@ let catch_up mut state =
   let jumped =
     match mut with
     | Pristine ->
-        List.fold_left (fun acc v -> update_local v catch_up_local acc) state Validator.all
+        List.fold_left (fun acc v -> update_local v catch_up_local acc) state roster
     | Drop_catch_up -> state
   in
   [ { jumped with phase = Commit_eval } ]

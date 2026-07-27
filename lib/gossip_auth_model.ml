@@ -48,6 +48,10 @@
     V1's (and V2's) view, with the cooperative run's publish-in-flight
     window - delivery is exactly the knowledge-producing event. *)
 
+(* This model's committee stays the original four validators; the global
+   roster is now the ten-member tn_model committee. *)
+let roster = [ Validator.V0; Validator.V1; Validator.V2; Validator.V3 ]
+
 (** The two frames that can appear on the certificate gossip topic:
     [Cert_c] is V0's aggregated anchor certificate, [Cert_c_prime] is the
     outsider-signed certificate O attempts to publish. *)
@@ -242,7 +246,7 @@ let initial =
     locals =
       List.fold_left
         (fun acc v -> Validator_map.add v local_empty acc)
-        Validator_map.empty Validator.all;
+        Validator_map.empty roster;
   }
 
 (** The local of [v], empty when absent - total by construction. *)
@@ -447,7 +451,9 @@ let atom_to_string = function
 let view v st =
   match v with
   | Validator.V1 | Validator.V2 -> local_of st v
-  | Validator.V0 | Validator.V3 -> local_empty
+  | Validator.V0 | Validator.V3 | Validator.V4 | Validator.V5 | Validator.V6
+  | Validator.V7 | Validator.V8 | Validator.V9 ->
+      local_empty
 
 (** The exact CTLK checker over this family's finite interpreted system. *)
 module Checker = System.Make (State) (View)

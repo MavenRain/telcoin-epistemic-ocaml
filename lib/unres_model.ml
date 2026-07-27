@@ -186,10 +186,16 @@ end
 (** View projection: V2 sees exactly its local state (and nothing global -
     neither the phase nor the hidden [unres] branch); V0, V1, and V3 are
     not knowledge agents in this family and get the constant empty view. *)
+(* 4-member committee threshold (f = 1): 2f+1 = 3. The global
+   Validator.quorum/support now describe the ten-member tn committee. *)
+let quorum = 3
+
 let view v (s : state) =
   match v with
   | Validator.V2 -> s.v2
-  | Validator.V0 | Validator.V1 | Validator.V3 -> local_empty
+  | Validator.V0 | Validator.V1 | Validator.V3 | Validator.V4 | Validator.V5
+  | Validator.V6 | Validator.V7 | Validator.V8 | Validator.V9 ->
+      local_empty
 
 (** The single initial state: [Start], hidden branch unresolved, V2
     empty. *)
@@ -284,7 +290,7 @@ let advance state =
   let l = state.v2 in
   let fetched = Validator_set.diff producers l.held in
   let held = Validator_set.union l.held fetched in
-  if Validator.quorum <= Validator_set.cardinal held then
+  if quorum <= Validator_set.cardinal held then
     [ { state with phase = Done; v2 = { l with held } } ]
   else []
 
@@ -341,7 +347,7 @@ let label a state =
   | Banned_2 v -> Validator_set.mem v state.v2.banned
   | Penalized_by_2 -> state.v2.penalized
   | Holds_cert_2 v -> Validator_set.mem v state.v2.held
-  | Quorum_2 -> Validator.quorum <= Validator_set.cardinal state.v2.held
+  | Quorum_2 -> quorum <= Validator_set.cardinal state.v2.held
   | At_done -> (
       match state.phase with
       | Done -> true

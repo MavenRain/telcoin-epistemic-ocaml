@@ -26,6 +26,10 @@
 
 open Catchup_model
 
+(* This model's committee stays the original four validators; the global
+   roster is now the ten-member tn_model committee. *)
+let roster = [ Validator.V0; Validator.V1; Validator.V2; Validator.V3 ]
+
 (** A statement over this family's atom vocabulary; [bucket] reuses the
     shared vocabulary of the frozen {!Statements} module, [antecedent] is the
     reachability witness [prove_nonvacuous] requires - the proof is refused
@@ -52,7 +56,7 @@ let atom a = Formula.Atom a
     before the round jump (proposer.rs:642-652) - see the module header of
     {!Catchup_model} for why the micro-phase must be its own step. *)
 let catch_up_antecedent =
-  let r2_digests = List.map (fun v -> { author = v; round = R2 }) Validator.all in
+  let r2_digests = List.map (fun v -> { author = v; round = R2 }) roster in
   Formula.And
     ( Formula.disj (List.map (fun d -> atom (In_dag (victim, d))) r2_digests),
       atom (Proposer_round_le (victim, R0)) )

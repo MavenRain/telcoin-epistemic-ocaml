@@ -366,7 +366,15 @@ let view v s =
           View_v2_no_bytes s.cert
       | ((Holds | Executed | Halted | Aborted) as p), Authored c ->
           View_v2_bytes (p, c, s.cert))
-  | Validator.V0 | Validator.V3 -> View_idle
+  | Validator.V0
+  | Validator.V3
+  | Validator.V4
+  | Validator.V5
+  | Validator.V6
+  | Validator.V7
+  | Validator.V8
+  | Validator.V9 ->
+      View_idle
 
 (** Gate deletion for the confirm-by-mutation tests. Each constructor deletes
     exactly one gate of [validate_batch] (validator.rs:39-82) and therefore

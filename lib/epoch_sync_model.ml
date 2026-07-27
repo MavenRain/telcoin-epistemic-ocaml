@@ -301,7 +301,16 @@ end
 let view v s =
   match v with
   | Validator.V1 -> View_v1 (s.phase, store_holds s.store, s.marked)
-  | Validator.V0 | Validator.V2 | Validator.V3 -> View_idle
+  | Validator.V0
+  | Validator.V2
+  | Validator.V3
+  | Validator.V4
+  | Validator.V5
+  | Validator.V6
+  | Validator.V7
+  | Validator.V8
+  | Validator.V9 ->
+      View_idle
 
 (** Gate deletions for the confirm-by-mutation tests. Each deletes exactly one
     real guard and is refuted by exactly one statement. *)

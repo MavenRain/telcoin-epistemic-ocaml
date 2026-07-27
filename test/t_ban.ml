@@ -10,6 +10,10 @@
 open Telcoin_epistemic
 open Ban_model
 
+(* This model's committee stays the original four validators; the global
+   roster is now the ten-member tn_model committee. *)
+let roster = [ Validator.V0; Validator.V1; Validator.V2; Validator.V3 ]
+
 (** Build the pristine system or fail the test on an impossible [Empty_init]. *)
 let with_sys k =
   Result.fold ~ok:k
@@ -66,7 +70,7 @@ let s2_k_pairs =
     (fun i ->
       List.map
         (fun p -> (i, Authored_bad p))
-        (List.filter (fun p -> Bool.not (Validator.equal p i)) Validator.all))
+        (List.filter (fun p -> Bool.not (Validator.equal p i)) roster))
     honest
 
 (** S2 knowledge is not collapsed: for every K conjunct the negation is

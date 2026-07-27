@@ -389,7 +389,8 @@ let view v s =
   match v with
   | Validator.V1 -> View_live s.chan
   | Validator.V0 -> View_stalled s.sib
-  | Validator.V2 | Validator.V3 -> View_idle
+  | Validator.V2 | Validator.V3 | Validator.V4 | Validator.V5 | Validator.V6
+  | Validator.V7 | Validator.V8 | Validator.V9 -> View_idle
 
 (** Gate deletion for the confirm-by-mutation test. *)
 type mutation =

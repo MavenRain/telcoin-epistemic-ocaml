@@ -122,6 +122,14 @@ module Validator_map = Map.Make (Validator)
 (** Validator sets: the round-2 proposer set. *)
 module Validator_set = Set.Make (Validator)
 
+(* This model's committee stays the original four validators; the global
+   roster is now the ten-member tn_model committee. *)
+let roster = [ Validator.V0; Validator.V1; Validator.V2; Validator.V3 ]
+
+(* 4-member committee thresholds (f = 1): 2f+1 = 3, f+1 = 2. The global
+   Validator.quorum/support now describe the ten-member tn committee. *)
+let quorum = 3
+
 (** The stall victim and sole knowledge agent of this family. *)
 let victim = Validator.V2
 
@@ -244,7 +252,7 @@ let initial =
     locals =
       List.fold_left
         (fun acc v -> Validator_map.add v local_empty acc)
-        Validator_map.empty Validator.all;
+        Validator_map.empty roster;
   }
 
 (** The validator's local state, total over the committee. *)
@@ -259,7 +267,9 @@ let local_of state v =
 let view v state =
   match v with
   | Validator.V2 -> local_of state victim
-  | Validator.V0 | Validator.V1 | Validator.V3 -> local_empty
+  | Validator.V0 | Validator.V1 | Validator.V3 | Validator.V4 | Validator.V5
+  | Validator.V6 | Validator.V7 | Validator.V8 | Validator.V9 ->
+      local_empty
 
 (** Ordered global-state module for {!System.Make}. *)
 module State = struct
@@ -294,7 +304,7 @@ let update_local v f state =
 
 (** Replace every validator's local through [f]. *)
 let update_all_locals f state =
-  List.fold_left (fun acc v -> update_local v (f v) acc) state Validator.all
+  List.fold_left (fun acc v -> update_local v (f v) acc) state roster
 
 (** The certificates of one round within a certificate set. *)
 let certs_of_round r cs =
@@ -305,7 +315,7 @@ let certs_of_round r cs =
 let dag_union state =
   List.fold_left
     (fun acc v -> Cert_set.union (local_of state v).dag acc)
-    Cert_set.empty Validator.all
+    Cert_set.empty roster
 
 (** How many round-[r] certificates a local dag holds. *)
 let own_round_count r l = Cert_set.cardinal (certs_of_round r l.dag)
@@ -351,7 +361,7 @@ let vote_r1 state = { state with phase = Certify R1 }
     (proposer.rs:546-553). *)
 let certify_authors r state =
   match r with
-  | R1 -> Validator.all
+  | R1 -> roster
   | R2 -> Validator_set.elements state.proposed_r2
 
 (** [Certify r]: quorum votes aggregate into certificates
@@ -372,7 +382,7 @@ let certify r state =
     validators, or only the peers when direct delivery to the victim is
     withheld. *)
 let deliver_round r state =
-  let receivers = if withholds_v2 state.delivery then peers else Validator.all in
+  let receivers = if withholds_v2 state.delivery then peers else roster in
   Cert_set.fold
     (fun c acc ->
       List.fold_left
@@ -426,8 +436,8 @@ let deliver r state =
 let propose_r2 state =
   let proposers =
     List.filter
-      (fun v -> Validator.quorum <= own_round_count R1 (local_of state v))
-      Validator.all
+      (fun v -> quorum <= own_round_count R1 (local_of state v))
+      roster
   in
   {
     state with
@@ -465,7 +475,7 @@ let vote_r2 state =
             acc
             (Validator_set.elements acc.proposed_r2)
         else acc)
-      state Validator.all
+      state roster
   in
   { voted with phase = Certify R2 }
 
@@ -475,7 +485,7 @@ let vote_r2 state =
     commit-progress timer (gc.rs:42-58) detects. *)
 let commit state =
   let commit_one _ l =
-    if Validator.quorum <= own_round_count R1 l then { l with committed = true }
+    if quorum <= own_round_count R1 l then { l with committed = true }
     else l
   in
   { (update_all_locals commit_one state) with phase = Timeout_fetch }
@@ -562,9 +572,9 @@ let label a state =
       commit_phase_reached state.phase
       && Bool.not (local_of state victim).committed
   | Cert_quorum_r1 ->
-      Validator.quorum <= Cert_set.cardinal (certs_of_round R1 (dag_union state))
+      quorum <= Cert_set.cardinal (certs_of_round R1 (dag_union state))
   | V2_holds_r1_quorum ->
-      Validator.quorum <= own_round_count R1 (local_of state victim)
+      quorum <= own_round_count R1 (local_of state victim)
   | V2_starved -> Cert_set.is_empty (certs_of_round R1 (local_of state victim).dag)
   | V2_has_fetch_targets ->
       Bool.not (Cert_set.is_empty (local_of state victim).pending)

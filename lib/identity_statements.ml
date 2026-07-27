@@ -22,6 +22,10 @@
 
 open Identity_model
 
+(* This model's committee stays the original four validators; the global
+   roster is now the ten-member tn_model committee. *)
+let roster = [ Validator.V0; Validator.V1; Validator.V2; Validator.V3 ]
+
 (** A statement over the identity family; [bucket] reuses the shared
     vocabulary of the frozen {!Statements} module, and [antecedent] is the
     reachability witness [prove_nonvacuous] requires so the implication is
@@ -41,7 +45,7 @@ let atom a = Formula.Atom a
     consensus.rs:397-440, PeerId space peers/types.rs:13-34): one
     [(peer, validator)] per committee slot, including the Byzantine slot's
     genuine [(p3, V3)]. *)
-let genuine_bindings = List.map (fun v -> (peer_of v, v)) Validator.all
+let genuine_bindings = List.map (fun v -> (peer_of v, v)) roster
 
 (** The forged binding the Byzantine [Forge_record] strategy pushes: V1's
     committee key claimed at V3's fresh PeerId p3. In the pristine model the

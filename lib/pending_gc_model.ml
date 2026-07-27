@@ -316,7 +316,14 @@ let view v s =
   | Validator.V1 -> View_local (s.local_c, s.local_d, s.horizon, s.req)
   | Validator.V0 -> View_author s.req
   | Validator.V2 -> View_peer s.peer_d
-  | Validator.V3 -> View_idle
+  | Validator.V3
+  | Validator.V4
+  | Validator.V5
+  | Validator.V6
+  | Validator.V7
+  | Validator.V8
+  | Validator.V9 ->
+      View_idle
 
 (** Gate deletion for the confirm-by-mutation test. *)
 type mutation =

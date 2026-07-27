@@ -19,6 +19,10 @@
 
 open Ban_model
 
+(* This model's committee stays the original four validators; the global
+   roster is now the ten-member tn_model committee. *)
+let roster = [ Validator.V0; Validator.V1; Validator.V2; Validator.V3 ]
+
 (** A statement over the ban model: name, bucket (the shared vocabulary from
     the frozen {!Statements} module), formula, and the reachability witness
     required by [prove_nonvacuous] - the proof is refused if the antecedent
@@ -69,7 +73,7 @@ let s2 =
              (fun p ->
                Formula.Implies
                  (atom (Fatal_charge (i, p)), Formula.K (i, atom (Authored_bad p))))
-             (List.filter (fun p -> Bool.not (Validator.equal p i)) Validator.all))
+             (List.filter (fun p -> Bool.not (Validator.equal p i)) roster))
          honest)
   in
   let no_honest_ban =

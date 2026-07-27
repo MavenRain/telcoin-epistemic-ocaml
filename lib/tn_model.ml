@@ -8,12 +8,13 @@
       delayed certificate delivery defers knowledge, never liveness;
     - vote-once per slot (handler.rs:787-847): an honest validator never
       signs two variants of one slot, which is what makes conflicting
-      certificates impossible at f = 1 (3 + 3 votes from 4 validators need
-      two double voters, and only V3 double-votes);
+      certificates impossible at f = 3 (7 + 7 votes from 10 validators need
+      four double voters, and only the three coalition members V3/V4/V5
+      double-vote);
     - certificates exist only when the model has assembled quorum votes
       (votes.rs:42-89 / certificate.rs:225-251, unforgeability by
       construction);
-    - the anchor (V0's R1 header) commits iff f+1 = 2 R2 certificates
+    - the anchor (V0's R1 header) commits iff f+1 = 4 R2 certificates
       reference it as parent, evaluated by each validator on ITS OWN DAG
       view (bullshark.rs:192-206); agreement is a checked property, not a
       construction;
@@ -29,21 +30,46 @@
 
 open Tn_state
 
-let honest = [ Validator.V0; Validator.V1; Validator.V2 ]
+let honest =
+  [
+    Validator.V0;
+    Validator.V1;
+    Validator.V2;
+    Validator.V6;
+    Validator.V7;
+    Validator.V8;
+    Validator.V9;
+  ]
+
+(* The coordinated adversary: f = 3 nodes acting under one uniform hidden
+   strategy. [byz] is the representative member whose digests the statements
+   cite (kept at V3 so the statement operands survive the 4 -> 10 committee
+   expansion unchanged). *)
+let byz_coalition = [ Validator.V3; Validator.V4; Validator.V5 ]
 
 let byz = Validator.V3
 
 let leader = Validator.V0
 
+(* The equivocation victim: the one honest validator the coalition shows
+   variant B. *)
+let victim = Validator.V2
+
 let anchor = { author = leader; round = R1; variant = A }
 
 let is_honest v = List.exists (fun h -> Validator.equal h v) honest
+
+let is_byz v = List.exists (fun b -> Validator.equal b v) byz_coalition
 
 (* Gate deletions for confirm-by-mutation tests. *)
 type mutation =
   | Pristine
   | Drop_batch_gate  (** honest voters skip the availability check *)
-  | Weak_quorum  (** certificates form at 2 votes instead of 2f+1 = 3 *)
+  | Weak_quorum
+      (** certificates form at f+1 = 4 votes instead of 2f+1 = 7 - exactly
+          the victim-plus-coalition tally an equivocating slot's B variant
+          collects, so the conflicting pair the pristine quorum forbids
+          becomes constructible *)
   | No_support_check  (** commit without the f+1 leader-support count *)
   | Unbounded_delay
       (** the delayed anchor is never delivered AND the synchronizer fetch
@@ -87,15 +113,17 @@ let prev_certs_of mut author r state =
 
 let byz_digests r = function
   | Byz_unchosen -> []
-  | Cooperate -> [ { author = byz; round = r; variant = A } ]
-  | Starve_batch -> [ { author = byz; round = r; variant = A } ]
+  | Cooperate | Starve_batch | Leader_crash ->
+      List.map (fun b -> { author = b; round = r; variant = A }) byz_coalition
   | Equivocate ->
-      [
-        { author = byz; round = r; variant = A };
-        { author = byz; round = r; variant = B };
-      ]
+      List.concat_map
+        (fun b ->
+          [
+            { author = b; round = r; variant = A };
+            { author = b; round = r; variant = B };
+          ])
+        byz_coalition
   | Silent -> []
-  | Leader_crash -> [ { author = byz; round = r; variant = A } ]
 
 let honest_proposers r strategy =
   match strategy with
@@ -111,14 +139,15 @@ let honest_proposers r strategy =
 
 (* Batch dissemination for a proposed slot: honest batches reach every
    worker before votes are requested; a starved Byzantine batch reaches only
-   its author. *)
+   its author (coalition workers withhold even from each other - sharing
+   would only weaken the availability attack the branch exists to model). *)
 let disseminate_batch sl state =
   let receivers =
-    if Validator.equal sl.s_author byz then
+    if is_byz sl.s_author then
       match state.strategy with
       | Byz_unchosen -> []
       | Cooperate -> Validator.all
-      | Starve_batch -> [ byz ]
+      | Starve_batch -> [ sl.s_author ]
       | Equivocate -> Validator.all
       | Silent -> []
       | Leader_crash -> Validator.all
@@ -153,13 +182,14 @@ let propose mut r state =
 
 (* --- vote --- *)
 
-(* Equivocation split: variant B goes to V2 (and its author); the A variant
-   of an equivocating slot goes to V0/V1 (and its author). Honest headers
-   are broadcast to everyone. Under [No_vote_once] the split is removed as
-   well, so both variants reach every validator - visibility is part of the
-   dissemination discipline that mutation deletes. *)
+(* Equivocation split: variant B goes to the victim V2 (and the coalition,
+   which authored it); the A variant of an equivocating slot goes to every
+   non-victim. Honest headers are broadcast to everyone. Under
+   [No_vote_once] the split is removed as well, so both variants reach
+   every validator - visibility is part of the dissemination discipline
+   that mutation deletes. *)
 let visible_to mut v d strategy =
-  if Validator.equal d.author byz then
+  if is_byz d.author then
     match strategy with
     | Byz_unchosen -> false
     | Cooperate -> true
@@ -170,10 +200,8 @@ let visible_to mut v d strategy =
         | Pristine | Drop_batch_gate | Weak_quorum | No_support_check
         | Unbounded_delay | Leader_censors_v2 -> (
             match d.variant with
-            | A ->
-                Validator.equal v Validator.V0 || Validator.equal v Validator.V1
-                || Validator.equal v byz
-            | B -> Validator.equal v Validator.V2 || Validator.equal v byz))
+            | A -> Bool.not (Validator.equal v victim)
+            | B -> Validator.equal v victim || is_byz v))
     | Silent -> false
     | Leader_crash -> true
   else true
@@ -233,13 +261,13 @@ let honest_votes mut v r state =
       && vote_once_gate mut v d state)
     (List.sort digest_compare (round_headers r state))
 
-let byz_votes mut r state =
+let byz_votes mut b r state =
   match state.strategy with
   | Byz_unchosen -> []
   | Silent -> []
   | Cooperate | Starve_batch | Equivocate | Leader_crash ->
       List.filter
-        (fun d -> visible_to mut byz d state.strategy)
+        (fun d -> visible_to mut b d state.strategy)
         (List.sort digest_compare (round_headers r state))
 
 let vote mut r state =
@@ -249,7 +277,7 @@ let vote mut r state =
         List.fold_left
           (fun acc' d -> cast mut v d acc')
           acc
-          (if is_honest v then honest_votes mut v r acc else byz_votes mut r acc))
+          (if is_honest v then honest_votes mut v r acc else byz_votes mut v r acc))
       state Validator.all
   in
   { voted with phase = Certify r }
@@ -261,7 +289,7 @@ let votes_for d state =
     (Vote_set.filter (fun vt -> Int.equal (digest_compare vt.subject d) 0) state.votes)
 
 let cert_threshold = function
-  | Weak_quorum -> 2
+  | Weak_quorum -> Validator.support
   | Pristine | Drop_batch_gate | No_support_check | Unbounded_delay
   | Leader_censors_v2 | No_vote_once ->
       Validator.quorum

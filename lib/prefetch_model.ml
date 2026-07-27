@@ -193,7 +193,9 @@ let view_blank = { w_recv = false; w_stored = false; w_dag_ref = false }
 let view v s =
   match v with
   | Validator.V1 -> view_v1 s
-  | Validator.V0 | Validator.V2 | Validator.V3 -> view_blank
+  | Validator.V0 | Validator.V2 | Validator.V3 | Validator.V4 | Validator.V5
+  | Validator.V6 | Validator.V7 | Validator.V8 | Validator.V9 ->
+      view_blank
 
 (** The initial state: gossip pending, author-branch unresolved, nothing
     received, no holders, nothing stored, no dag reference. *)

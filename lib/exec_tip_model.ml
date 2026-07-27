@@ -322,7 +322,8 @@ let view v s =
   | Validator.V1 -> View_voter (s.e1, s.d1, s.cert)
   | Validator.V2 -> View_voter (s.e2, s.d2, s.cert)
   | Validator.V3 -> View_observer s.cert
-  | Validator.V0 -> View_blank
+  | Validator.V0 | Validator.V4 | Validator.V5 | Validator.V6 | Validator.V7
+  | Validator.V8 | Validator.V9 -> View_blank
 
 (** Gate deletion for the confirm-by-mutation test. *)
 type mutation =

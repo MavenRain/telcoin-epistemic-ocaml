@@ -1,21 +1,26 @@
-(** The four validators of the finite model: n = 4, f = 1, quorum = 2f+1 = 3.
+(** The ten validators of the finite model: n = 10, f = 3, quorum = 2f+1 = 7.
 
-    Which validator (if any) is Byzantine is a property of the {e model}, not
-    of the identity type; the statement modules fix that assignment. Keeping
-    the type a bare finite sum gives every consumer exhaustive matching over
-    the committee. *)
+    Which validators (if any) are Byzantine is a property of the {e model},
+    not of the identity type; the statement modules fix that assignment.
+    Keeping the type a bare finite sum gives every consumer exhaustive
+    matching over the committee.
 
-type t = V0 | V1 | V2 | V3
+    The isolated family models predate the ten-member committee and keep
+    their original four-member semantics with module-local rosters and
+    thresholds; [all], [quorum] and [support] describe the full committee
+    the {!Tn_model} abstraction runs on. *)
+
+type t = V0 | V1 | V2 | V3 | V4 | V5 | V6 | V7 | V8 | V9
 
 val all : t list
-(** [V0; V1; V2; V3], the committee in canonical order. *)
+(** [V0; ...; V9], the committee in canonical order. *)
 
 val compare : t -> t -> int
 val equal : t -> t -> bool
 val to_string : t -> string
 
 val quorum : int
-(** 2f+1 = 3: certificates and round advancement. *)
+(** 2f+1 = 7: certificates and round advancement. *)
 
 val support : int
-(** f+1 = 2: the Bullshark leader-support threshold. *)
+(** f+1 = 4: the Bullshark leader-support threshold. *)

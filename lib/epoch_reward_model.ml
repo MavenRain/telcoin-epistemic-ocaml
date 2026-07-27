@@ -342,7 +342,9 @@ let view v s =
   | Validator.V1 ->
       View_v1 (s.v1.prog, s.v1.led, s.v1.sealed, s.v1_saw_peer_vote)
   | Validator.V2 -> View_v2 (s.v2.prog, s.v2.led, s.v2.sealed, s.v2_restarted)
-  | Validator.V0 | Validator.V3 -> View_idle
+  | Validator.V0 | Validator.V3 | Validator.V4 | Validator.V5 | Validator.V6
+  | Validator.V7 | Validator.V8 | Validator.V9 ->
+      View_idle
 
 (** Gate deletion for the confirm-by-mutation test. *)
 type mutation =

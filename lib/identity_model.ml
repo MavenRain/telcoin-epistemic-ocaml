@@ -39,13 +39,29 @@
     keeps K contingent. V3 is not a knowledge agent: its view is constantly
     empty and it never appears under K, Everyone, or Common. *)
 
+(* This model's committee stays the original four validators; the global
+   roster is now the ten-member tn_model committee. *)
+let roster = [ Validator.V0; Validator.V1; Validator.V2; Validator.V3 ]
+
 (** The libp2p PeerId space, finite (peers/types.rs:13-34): the canonical
     peer id of each committee slot. [P3] is the fresh peer id V3 connects
-    under; the forged record claims V1's committee key at [P3]. *)
-type peer = P0 | P1 | P2 | P3
+    under; the forged record claims V1's committee key at [P3]. [P4]..[P9]
+    are the canonical ids of the extended tn committee slots, outside this
+    four-validator family. *)
+type peer = P0 | P1 | P2 | P3 | P4 | P5 | P6 | P7 | P8 | P9
 
 (** Total order witness for {!peer}. *)
-let peer_index = function P0 -> 0 | P1 -> 1 | P2 -> 2 | P3 -> 3
+let peer_index = function
+  | P0 -> 0
+  | P1 -> 1
+  | P2 -> 2
+  | P3 -> 3
+  | P4 -> 4
+  | P5 -> 5
+  | P6 -> 6
+  | P7 -> 7
+  | P8 -> 8
+  | P9 -> 9
 
 (** Total deterministic comparison over {!peer}. *)
 let peer_compare a b = Int.compare (peer_index a) (peer_index b)
@@ -54,7 +70,17 @@ let peer_compare a b = Int.compare (peer_index a) (peer_index b)
 let peer_equal a b = Int.equal (peer_compare a b) 0
 
 (** Render a {!peer} for atom strings. *)
-let peer_to_string = function P0 -> "p0" | P1 -> "p1" | P2 -> "p2" | P3 -> "p3"
+let peer_to_string = function
+  | P0 -> "p0"
+  | P1 -> "p1"
+  | P2 -> "p2"
+  | P3 -> "p3"
+  | P4 -> "p4"
+  | P5 -> "p5"
+  | P6 -> "p6"
+  | P7 -> "p7"
+  | P8 -> "p8"
+  | P9 -> "p9"
 
 (** The canonical peer id each validator advertises (the genuine binding
     subject of its NodeRecord, consensus.rs:529-565). *)
@@ -63,6 +89,12 @@ let peer_of = function
   | Validator.V1 -> P1
   | Validator.V2 -> P2
   | Validator.V3 -> P3
+  | Validator.V4 -> P4
+  | Validator.V5 -> P5
+  | Validator.V6 -> P6
+  | Validator.V7 -> P7
+  | Validator.V8 -> P8
+  | Validator.V9 -> P9
 
 (** A claimed (validator key, peer id) binding. The type serves two roles,
     distinguished by the field it sits in: an entry of the global [signed]
@@ -238,7 +270,9 @@ let local_of state v =
 let view v state =
   match v with
   | Validator.V0 | Validator.V1 | Validator.V2 -> local_of state v
-  | Validator.V3 -> local_empty
+  | Validator.V3 | Validator.V4 | Validator.V5 | Validator.V6 | Validator.V7
+  | Validator.V8 | Validator.V9 ->
+      local_empty
 
 (** Replace one validator's local by an update of it. *)
 let update_local v f state =
@@ -307,7 +341,7 @@ let verify_gate mut b state =
     its self-advertised subject - so the modeled confirm premise reduces to
     delivery plus the signature gate. *)
 let committee_key_or_advertised b =
-  List.exists (fun v -> Validator.equal v b.b_validator) Validator.all
+  List.exists (fun v -> Validator.equal v b.b_validator) roster
 
 (** The confirm rule (manager.rs:799-838, 851-875): for each delivered
     record, admit the claimed binding into the node's confirmed map iff the

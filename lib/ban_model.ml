@@ -56,6 +56,10 @@
     ground [K_i (authored_bad V3)] - no reachable state gives it that local
     evidence without [V3] having authored the payload. *)
 
+(* This model's committee stays the original four validators; the global
+   roster is now the ten-member tn_model committee. *)
+let roster = [ Validator.V0; Validator.V1; Validator.V2; Validator.V3 ]
+
 (** The honest knowledge agents of this family, in canonical order. *)
 let honest = [ Validator.V0; Validator.V1; Validator.V2 ]
 
@@ -203,7 +207,9 @@ let local_of state v =
 let view v state =
   match v with
   | Validator.V0 | Validator.V1 | Validator.V2 -> local_of state v
-  | Validator.V3 -> local_empty
+  | Validator.V3 | Validator.V4 | Validator.V5 | Validator.V6 | Validator.V7
+  | Validator.V8 | Validator.V9 ->
+      local_empty
 
 (** The single initial state: branch unchosen, every local empty. *)
 let initial =
@@ -213,7 +219,7 @@ let initial =
     locals =
       List.fold_left
         (fun acc v -> Validator_map.add v local_empty acc)
-        Validator_map.empty Validator.all;
+        Validator_map.empty roster;
   }
 
 (** Gate deletions for the confirm-by-mutation tests. [Charge_relayer]
@@ -356,7 +362,10 @@ let label a state =
   | Authored_bad p -> (
       match p with
       | Validator.V3 -> invalid_gossip state.strategy
-      | Validator.V0 | Validator.V1 | Validator.V2 -> false)
+      | Validator.V0 | Validator.V1 | Validator.V2 | Validator.V4
+      | Validator.V5 | Validator.V6 | Validator.V7 | Validator.V8
+      | Validator.V9 ->
+          false)
   | Fatal_charge (i, p) ->
       Option.fold ~none:false ~some:(Validator.equal p) (local_of state i).charged
   | Banned (i, j) ->

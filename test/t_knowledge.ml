@@ -38,6 +38,10 @@ let view v (b0, b1) =
   | Validator.V1 -> b1
   | Validator.V2 -> b0
   | Validator.V3 -> b1
+  (* V4..V9: non-participants of this toy frame - constant blind view. *)
+  | Validator.V4 | Validator.V5 | Validator.V6 | Validator.V7 | Validator.V8
+  | Validator.V9 ->
+      0
 
 let spec_of_states states =
   { Sys.init = states; next = (fun _ -> []); view; label }
@@ -52,7 +56,9 @@ let with_sys spec k =
     ~error:(fun Sys.Empty_init -> Alcotest.fail "make: empty init")
     (Sys.make spec)
 
-let all_h = Validator.all
+(* This model's committee stays the original four validators; the global
+   roster is now the ten-member tn_model committee. *)
+let all_h = [ Validator.V0; Validator.V1; Validator.V2; Validator.V3 ]
 
 let knows_own_bit () =
   with_sys silent (fun sys ->

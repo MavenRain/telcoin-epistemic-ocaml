@@ -51,6 +51,10 @@
     the state carries no free fields for them, mirroring the code where the
     table is a deterministic function of the committed sequence. *)
 
+(* This model's committee stays the original four validators; the global
+   roster is now the ten-member tn_model committee. *)
+let roster = [ Validator.V0; Validator.V1; Validator.V2; Validator.V3 ]
+
 (** The honest committee, the family's knowledge agents. *)
 let honest = [ Validator.V0; Validator.V1; Validator.V2 ]
 
@@ -204,7 +208,9 @@ let local_of state v =
 let view v state =
   match v with
   | Validator.V0 | Validator.V1 | Validator.V2 -> local_of state v
-  | Validator.V3 -> local_empty
+  | Validator.V3 | Validator.V4 | Validator.V5 | Validator.V6 | Validator.V7
+  | Validator.V8 | Validator.V9 ->
+      local_empty
 
 (** The committed score read-back, a pure function of a committed closure
     (bullshark.rs:81-89): the accumulated support-certificate count for the
@@ -237,7 +243,7 @@ let isqrt n =
     draw consults, never bad/good membership. An all-zero (uncommitted)
     tally truncates the deviation to 0, so no table is installed. *)
 let swapped closure =
-  let scores = List.map (score closure) Validator.all in
+  let scores = List.map (score closure) roster in
   let n = List.length scores in
   let highest = List.fold_left Int.max 0 scores in
   let lowest = List.fold_left Int.min highest scores in
@@ -249,7 +255,7 @@ let swapped closure =
   let list_threshold = 1 in
   let bad_ceil = Int.max 0 (highest - (2 * standard_dev)) in
   let rec bad_below ceil =
-    let bad = List.filter (fun v -> score closure v <= ceil) Validator.all in
+    let bad = List.filter (fun v -> score closure v <= ceil) roster in
     if List.length bad <= list_threshold then bad
     else
       let lowered = Int.max 0 (ceil - standard_dev) in
@@ -284,7 +290,10 @@ let pick_of draws v =
   | Draws_split -> (
       match v with
       | Validator.V1 -> Validator.V2
-      | Validator.V0 | Validator.V2 | Validator.V3 -> a_good)
+      | Validator.V0 | Validator.V2 | Validator.V3 | Validator.V4
+      | Validator.V5 | Validator.V6 | Validator.V7 | Validator.V8
+      | Validator.V9 ->
+          a_good)
 
 (** DERIVED: the validator's next leader for the bad slot - the round-robin
     choice V3 (next_leader, leader_schedule.rs:285-304) unless its

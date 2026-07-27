@@ -257,7 +257,9 @@ end
    consensus.rs:882-904), V3 its own hidden branch, V0 nothing. *)
 let view v s =
   match v with
-  | Validator.V0 -> Vw_idle
+  | Validator.V0 | Validator.V4 | Validator.V5 | Validator.V6 | Validator.V7
+  | Validator.V8 | Validator.V9 ->
+      Vw_idle
   | Validator.V1 -> Vw_requester (s.req_to, s.cache)
   | Validator.V2 -> Vw_honest_holder
   | Validator.V3 -> Vw_byz s.v3_mode

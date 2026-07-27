@@ -24,6 +24,10 @@ let view v s =
   | Validator.V1 -> b1 s
   | Validator.V2 -> b0 s
   | Validator.V3 -> b1 s
+  (* V4..V9: non-participants of this toy frame - constant blind view. *)
+  | Validator.V4 | Validator.V5 | Validator.V6 | Validator.V7 | Validator.V8
+  | Validator.V9 ->
+      0
 
 type atom = P
 

@@ -397,7 +397,16 @@ let view v s =
   match v with
   | Validator.V0 ->
       View_v0 (s.stage, s.payload, author_class_of s.author, s.charge, s.arep)
-  | Validator.V1 | Validator.V2 | Validator.V3 -> View_idle
+  | Validator.V1
+  | Validator.V2
+  | Validator.V3
+  | Validator.V4
+  | Validator.V5
+  | Validator.V6
+  | Validator.V7
+  | Validator.V8
+  | Validator.V9 ->
+      View_idle
 
 (** Gate deletion for the confirm-by-mutation tests. *)
 type mutation =

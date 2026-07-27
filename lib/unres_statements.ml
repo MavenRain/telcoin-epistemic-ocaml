@@ -19,6 +19,10 @@
 
 open Unres_model
 
+(* This model's committee stays the original four validators; the global
+   roster is now the ten-member tn_model committee. *)
+let roster = [ Validator.V0; Validator.V1; Validator.V2; Validator.V3 ]
+
 (** A statement over the unresolved-author model: name, bucket (the shared
     vocabulary from {!Statements}), formula, and the reachability witness
     required by [prove_nonvacuous] - the proof is refused if the antecedent
@@ -41,7 +45,7 @@ let atom a = Formula.Atom a
     (peers/all_peers.rs:853-873). *)
 let no_ban_by_2 =
   Formula.conj
-    (List.map (fun v -> Formula.Not (atom (Banned_2 v))) Validator.all)
+    (List.map (fun v -> Formula.Not (atom (Banned_2 v))) roster)
 
 (** S3 - unresolved-author-reject-skips-penalty-and-liveness-recovers
     [liveness]. A gossip frame whose author cannot be resolved to a committee

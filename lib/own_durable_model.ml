@@ -281,7 +281,8 @@ let view v s =
   match v with
   | Validator.V1 -> View_v1 (s.mem, s.pub_c1, s.pub_c2, s.restarted, s.recert)
   | Validator.V2 -> View_v2 (s.pub_c1, s.pub_c2, s.recert)
-  | Validator.V0 | Validator.V3 -> View_idle
+  | Validator.V0 | Validator.V3 | Validator.V4 | Validator.V5 | Validator.V6
+  | Validator.V7 | Validator.V8 | Validator.V9 -> View_idle
 
 (** Gate deletion for the confirm-by-mutation tests. *)
 type mutation =

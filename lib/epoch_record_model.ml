@@ -408,7 +408,9 @@ end
 let view v s =
   match v with
   | Validator.V1 -> View_v1 (s.stage, s.store, s.byz)
-  | Validator.V0 | Validator.V2 | Validator.V3 -> View_idle
+  | Validator.V0 | Validator.V2 | Validator.V3 | Validator.V4 | Validator.V5
+  | Validator.V6 | Validator.V7 | Validator.V8 | Validator.V9 ->
+      View_idle
 
 (** Gate deletions for the confirm-by-mutation tests. *)
 type mutation =

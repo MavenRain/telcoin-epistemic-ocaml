@@ -417,7 +417,8 @@ let view v s =
   match v with
   | Validator.V1 -> View_v1 (s.ep, s.out, cert_trace s.cert, s.exex)
   | Validator.V2 -> View_v2 (s.net, node_liveness s)
-  | Validator.V0 | Validator.V3 -> View_idle
+  | Validator.V0 | Validator.V3 | Validator.V4 | Validator.V5 | Validator.V6
+  | Validator.V7 | Validator.V8 | Validator.V9 -> View_idle
 
 (** Gate deletions for the confirm-by-mutation tests. *)
 type mutation =

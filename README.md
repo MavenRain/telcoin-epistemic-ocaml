@@ -109,7 +109,7 @@ deletions used as pins; `Pristine` is omitted.
 
 | model | telcoin subsystem | states | mutations |
 |---|---|---|---|
-| `tn_model` | one Narwhal/Bullshark anchor window, 4 validators, f = 1, 3 rounds: propose -> vote -> certify at 2f+1 -> deliver -> f+1-support commit -> deterministic execution | 141 | `Drop_batch_gate`, `Weak_quorum`, `No_support_check`, `Unbounded_delay`, `Leader_censors_v2`, `No_vote_once` |
+| `tn_model` | one Narwhal/Bullshark anchor window, 10 validators with a uniform-strategy Byzantine coalition (V3/V4/V5), f = 3, 3 rounds: propose -> vote -> certify at 2f+1 = 7 -> deliver -> f+1 = 4-support commit -> deterministic execution. n = 3f+1 is the tight point of the BFT arithmetic: the n-f = 7 honest validators are exactly a quorum, and a conflicting certificate pair needs 4 double-voters where the coalition supplies 3 | 141 | `Drop_batch_gate`, `Weak_quorum`, `No_support_check`, `Unbounded_delay`, `Leader_censors_v2`, `No_vote_once` |
 
 ### Generation 2 - twelve isolated families
 
@@ -423,7 +423,8 @@ current tree builds with 0 errors and 0 warnings, and runs 63 test executables /
 Read this section before quoting anything above.
 
 - **The models are not the system.** Every proof is a statement about a finite
-  abstraction - 4 validators, f = 1, a handful of rounds, one epoch boundary,
+  abstraction - 10 validators (f = 3) in the shared model, 4 in the family
+  models, a handful of rounds, one epoch boundary,
   one batch, one certificate - not about telcoin-network. A proof means the
   modelled mechanism has the stated epistemic property in the modelled runs. It
   says nothing about code paths that were not modelled, and nothing about the

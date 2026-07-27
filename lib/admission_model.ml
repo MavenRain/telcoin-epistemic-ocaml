@@ -176,7 +176,9 @@ let view v s =
   match v with
   | Validator.V1 -> View_v1 (s.p1.conn, s.p1.ban, s.p3.conn)
   | Validator.V2 -> View_v2 (s.p2.conn, s.p2.ban, s.p3.conn, s.p3.ban)
-  | Validator.V0 | Validator.V3 -> View_idle
+  | Validator.V0 | Validator.V3 | Validator.V4 | Validator.V5 | Validator.V6
+  | Validator.V7 | Validator.V8 | Validator.V9 ->
+      View_idle
 
 (** Gate deletion for the confirm-by-mutation test. *)
 type mutation =

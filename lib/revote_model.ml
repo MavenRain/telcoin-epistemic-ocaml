@@ -54,6 +54,10 @@
     produce the certificate value only from the phase where the honest
     quorum (including V1's recorded h1 vote) has signed. *)
 
+(* This model's committee stays the original four validators; the global
+   roster is now the ten-member tn_model committee. *)
+let roster = [ Validator.V0; Validator.V1; Validator.V2; Validator.V3 ]
+
 (* The two conflicting headers V3 issues for slot (V3, R0): h1 first, the
    equivocating h2 at the Revote step. *)
 
@@ -221,7 +225,9 @@ let view_blank =
 let view v s =
   match v with
   | Validator.V1 -> view_v1 s
-  | Validator.V0 | Validator.V2 | Validator.V3 -> view_blank
+  | Validator.V0 | Validator.V2 | Validator.V3 | Validator.V4 | Validator.V5
+  | Validator.V6 | Validator.V7 | Validator.V8 | Validator.V9 ->
+      view_blank
 
 (** The initial state: Vote phase, sub-choice unresolved, nothing voted,
     no certificate anywhere. *)
@@ -250,7 +256,7 @@ type mutation =
 let all_holders =
   List.fold_left
     (fun acc v -> Validator_set.add v acc)
-    Validator_set.empty Validator.all
+    Validator_set.empty roster
 
 (** Vote step: V1 signs V3's first header h1 (the no-previous-vote path of
     [vote_inner], handler.rs:772-786); V0/V2's quorum signatures are

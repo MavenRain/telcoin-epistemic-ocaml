@@ -1,5 +1,6 @@
-(** The abstracted telcoin-network global state: 4 validators (V3 Byzantine),
-    f = 1, three Narwhal rounds driven by a phase machine (propose -> vote ->
+(** The abstracted telcoin-network global state: 10 validators with a
+    Byzantine coalition (V3, V4, V5 acting under one uniform strategy),
+    f = 3, three Narwhal rounds driven by a phase machine (propose -> vote ->
     certify -> deliver per round, then commit evaluation, execution, terminal
     stutter). The Bullshark anchor is V0's R1 header; R2 certificates
     referencing it are its support.
@@ -7,13 +8,17 @@
     The abstraction keeps exactly the structure the statements quantify over:
     headers with an equivocation variant bit, batch possession (the
     batch-validator availability gate), votes with vote-once-per-slot
-    discipline, 2f+1 certificates, per-validator DAG views (the knowledge
-    ground for K_i), the f+1 leader-support commit rule, and a deterministic
-    execution digest. Signatures are unforgeability by construction: a
-    certificate value exists only if the model assembled quorum votes for
-    it. *)
+    discipline, 2f+1 = 7 certificates, per-validator DAG views (the knowledge
+    ground for K_i), the f+1 = 4 leader-support commit rule, and a
+    deterministic execution digest. Signatures are unforgeability by
+    construction: a certificate value exists only if the model assembled
+    quorum votes for it. The committee size is the exact tight point of the
+    BFT arithmetic: n = 3f+1, so the n-f = 7 honest validators are precisely
+    a quorum (the Silent branch progresses with zero slack), and two
+    conflicting certificates would need 2(2f+1) - n = 4 double-voters where
+    the coalition supplies only 3. *)
 
-(* The Byzantine proposer may issue two conflicting headers for one slot;
+(* A Byzantine proposer may issue two conflicting headers for one slot;
    honest proposers only ever issue [A]. *)
 type variant = A | B
 
@@ -85,18 +90,21 @@ end)
 
 module Validator_map = Map.Make (Validator)
 
-(* The Byzantine strategy, one branch fixed at Propose R0 and applied
-   uniformly each round: [Cooperate] follows the protocol; [Starve_batch]
-   proposes but withholds the batch payload from honest workers (the
-   availability attack); [Equivocate] issues variant A to V0/V1 and variant
+(* The Byzantine coalition strategy, one branch fixed at Propose R0 and
+   applied uniformly by every coalition member (V3/V4/V5) each round: a
+   coordinated adversary picks ONE plan for its f = 3 nodes, so the
+   strategy is a single hidden branch, not a per-member product.
+   [Cooperate] follows the protocol; [Starve_batch] proposes but withholds
+   each batch payload from honest workers (the availability attack);
+   [Equivocate] issues variant A to the non-victim validators and variant
    B to V2, voting for both; [Silent] proposes and votes nothing (the
    fail-stop / withholding attack liveness must survive); [Leader_crash] is
    the cooperative-Byzantine branch in which the HONEST leader V0 fails to
    propose its R1 anchor (the proposer-crash run the encodability analysis
    requires as the cert-free indistinguishability witness - the run where no
    anchor certificate ever forms, so knowing one formed is contingent).
-   Crash composes only with a cooperative V3: crash plus a withholding V3
-   is two faults, beyond f = 1. *)
+   Crash composes only with a cooperative coalition: crash plus a
+   withholding coalition is four faults, beyond f = 3. *)
 type byz_strategy =
   | Byz_unchosen
   | Cooperate

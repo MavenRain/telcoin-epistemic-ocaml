@@ -164,7 +164,9 @@ end
 let view v s =
   match v with
   | Validator.V0 -> Observer_tally s.tally
-  | Validator.V1 | Validator.V2 | Validator.V3 -> Blind
+  | Validator.V1 | Validator.V2 | Validator.V3 | Validator.V4 | Validator.V5
+  | Validator.V6 | Validator.V7 | Validator.V8 | Validator.V9 ->
+      Blind
 
 (** Gate deletion for the confirm-by-mutation test. *)
 type mutation =
@@ -176,10 +178,14 @@ type mutation =
           handler.rs:341), so V3's single fabricated signature advances the
           watch before any honest CVV saved the output *)
 
+(* 4-member committee thresholds (f = 1): 2f+1 = 3, f+1 = 2. The global
+   Validator.quorum/support now describe the ten-member tn committee. *)
+let support = 2
+
 (** The advance threshold: f+1 = 2 distinct signers pristine
     ([enough_sigs], handler.rs:341); 1 under the mutation. *)
 let advance_threshold = function
-  | Pristine -> Validator.support
+  | Pristine -> support
   | Weak_sig_threshold -> 1
 
 (** Deliver signed results to the observer and run the SINGLE advance gate

@@ -48,9 +48,11 @@ let byz_r0 = d_r0 Validator.V3
    votes for exactly that digest exist (BLS aggregate verification:
    certificate.rs:225-251, is_verified gate cert_manager.rs:88-93), and no
    two certificates ever occupy one (author, round) slot (equivocation
-   rejection state.rs:145-157; at f = 1 quorum intersection makes a
-   conflicting pair unreachable - the detect-and-halt branch needs two
-   Byzantine validators and is out of this model's scope). *)
+   rejection state.rs:145-157; quorum intersection makes a conflicting
+   pair unreachable - two 2f+1 = 7 quorums drawn from 10 validators
+   overlap in 2(2f+1) - n = 4 double-voters, one more than the f = 3
+   coalition can supply, so the detect-and-halt branch is out of this
+   model's scope). *)
 let s1 =
   let key = [ d_r0 Validator.V1; byz_r0; anchor; d_r2 Validator.V2 ] in
   let known_quorum =
@@ -131,7 +133,7 @@ let s3 =
              ( Formula.And
                  (atom Byz_equivocating, Formula.Not (atom (Equivocation_evidence i))),
                Formula.Not (Formula.K (i, atom Byz_equivocating)) ))
-         [ Validator.V0; Validator.V1 ])
+         (List.filter (fun v -> Bool.not (Validator.equal v victim)) honest))
   in
   {
     name = "no-conflicting-revote-and-equivocation-detectability";

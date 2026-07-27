@@ -339,7 +339,8 @@ let view v s =
   match v with
   | Validator.V1 ->
       View_fetcher (s.step, obs_of_check s.check, s.store, s.peer_claim)
-  | Validator.V0 | Validator.V2 | Validator.V3 -> View_idle
+  | Validator.V0 | Validator.V2 | Validator.V3 | Validator.V4 | Validator.V5
+  | Validator.V6 | Validator.V7 | Validator.V8 | Validator.V9 -> View_idle
 
 (** Gate deletion for the confirm-by-mutation test. *)
 type mutation =
