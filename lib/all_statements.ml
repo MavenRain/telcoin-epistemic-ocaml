@@ -26,13 +26,18 @@ let original_reports () =
       List.map (row false) Statements.all)
     (Tn_model.make ())
 
-(** All 63 reports: the seven originals, then the fourteen first-expansion
+(** All 90 reports: the seven originals, then the fourteen first-expansion
     statements in DESIGN-spec family order (ban, admission, gossip-auth,
     exec-tally, identity, then the consensus-ext and request-response
     families), then the forty-two second-expansion statements in family order
     (the four epoch families, then execution, exex, gossip, storage, primary,
-    worker and libp2p-discovery). Each family call builds and checks its own
-    model. *)
+    worker and libp2p-discovery), then the twenty-seven third-expansion
+    statements over nine more consensus-side family models (the DAG commit
+    walk and its retention, the round-quorum aggregator, the proposer's
+    parent handoff, certificate-fetch verification state, the causal
+    pending-release handoff, and the three request-admission families for
+    epoch records, sync streams and parent claims). Each family call builds
+    and checks its own model. *)
 let all () =
   List.concat
     [
@@ -63,4 +68,46 @@ let all () =
       Batch_verdict_statements.reports ();
       Verif_prov_statements.reports ();
       Discovery_statements.reports ();
+      Subdag_leader_walk_statements.reports ();
+      Dag_retention_statements.reports ();
+      Round_weight_cap_statements.reports ();
+      Parent_batch_forward_statements.reports ();
+      Fetch_verif_state_statements.reports ();
+      Causal_handoff_statements.reports ();
+      Record_serve_pool_statements.reports ();
+      Stream_slot_tenure_statements.reports ();
+      Parent_claim_binding_statements.reports ();
+      Vote_cache_retry_statements.reports ();
+      Worker_stream_quota_statements.reports ();
+      Batch_quorum_tally_statements.reports ();
+      Output_forward_gate_statements.reports ();
+      Pack_replay_statements.reports ();
+      Gas_penalty_split_statements.reports ();
+      Bls_verify_gate_statements.reports ();
+      Close_block_syscall_statements.reports ();
+      Tel_dispatch_surface_statements.reports ();
+      Fee_routing_sink_statements.reports ();
+      Tel_supply_ledger_statements.reports ();
+      Batch_pack_share_statements.reports ();
+      Tx_forward_route_statements.reports ();
+      Cert_bitmap_quorum_statements.reports ();
+      Boot_order_statements.reports ();
+      Engine_queue_statements.reports ();
+      Batch_admit_statements.reports ();
+      Serve_slot_quota_statements.reports ();
+      Exec_absorb_statements.reports ();
+      Archive_pack_heal_statements.reports ();
+      Archive_digest_lookup_statements.reports ();
+      Archive_epoch_import_statements.reports ();
+      Store_key_order_statements.reports ();
+      Store_full_memory_statements.reports ();
+      Archive_hash_index_statements.reports ();
+      Backend_writer_thread_statements.reports ();
+      Backend_env_split_statements.reports ();
+      Store_notify_visibility_statements.reports ();
+      Peer_prune_fairness_statements.reports ();
+      Peer_temp_ban_statements.reports ();
+      Rpc_codec_size_statements.reports ();
+      Stream_inbound_quota_statements.reports ();
+      Stream_sync_capability_statements.reports ();
     ]
