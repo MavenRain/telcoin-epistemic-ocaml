@@ -77,7 +77,7 @@
 
     Components. The three episodes share ONE hidden world component and are
     modelled as a DISJOINT UNION ([episode], an OCaml variant, not a product):
-    a run stays inside one episode, which is what keeps the graph at 30 states
+    a run stays inside one episode, which is what keeps the graph at 35 states
     rather than the product's hundreds.
 
     - [nature] - the hidden world. [N_current]: authority A never published
@@ -439,7 +439,7 @@ type mutation =
           [recv_r1] transition (got_r1=false, res=Q_r0) -> (got_r1=true,
           res=Q_r0) in both newer-record worlds, making [Ep_query{true, Q_r0,
           Q_open}] and its closed twin (with cache=[C_r0]) reachable and taking
-          the reachable count 30 -> 34. NO SIBLING PATH repairs it: the only
+          the reachable count 35 -> 39. NO SIBLING PATH repairs it: the only
           recency predicate in the crate, [is_newer_record]
           (consensus.rs:1954-1972), has exactly ONE call site - consensus.rs:1916
           on the PUT route - and the GET route never calls it;
@@ -486,7 +486,7 @@ type mutation =
           makes the [put_stale] transition set penalized := true, so
           [Ep_put{P_stale,true}] is reachable in BOTH newer-record worlds -
           including [N_lagging], where the source is an honest restarted
-          replicator (reachable count unchanged at 30). NO SIBLING PATH
+          replicator (reachable count unchanged at 35). NO SIBLING PATH
           un-attributes the added penalty within scope: the real candidate, the
           [TrustBasis] exemption in [Peer::apply_penalty] (peer.rs:213-233,
           reached via [AllPeers::process_penalty], all_peers.rs:261-264), fires
@@ -507,7 +507,7 @@ type mutation =
           [self.peers.upsert_peer(bls, net_key, addrs)] with it, trusting the
           UNSIGNED map. This makes the [recv_px] transition also set bound :=
           true, so [Ep_px{hinted=true; signed_seen=false; bound=true}] is
-          reachable in all three worlds (reachable count unchanged at 30). NO
+          reachable in all three worlds (reachable count unchanged at 35). NO
           SIBLING PATH rejects or undoes the unsigned binding:
           [AllPeers::upsert_peer] (all_peers.rs:212-256) performs NO validation
           - it evicts/migrates, calls [peer.update_net], then inserts

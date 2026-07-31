@@ -1,9 +1,9 @@
-(** The full 63-statement report: the original seven statements over
-    {!Tn_model}, the fourteen first-expansion statements, and the forty-two
-    second-expansion statements, each proved over its own lean isolated family
-    model (see the family modules). Theorems over different State/View types
-    cannot share a list, so the aggregation is the flat {!Report.t} projection;
-    the per-family suites carry the actual kernel theorems and mutation pins. *)
+(** The full 189-statement report: the seven statements over the shared
+    {!Tn_model} and the 182 statements of the 68 isolated family models, each
+    proved over its own lean family model (see the family modules). Theorems
+    over different State/View types cannot share a list, so the aggregation is
+    the flat {!Report.t} projection; the per-family suites carry the actual
+    kernel theorems and mutation pins. *)
 
 (** The original seven statements, reported off the pristine {!Tn_model}
     system; a [make] failure degrades to [proved = false] rows rather than an
@@ -26,18 +26,10 @@ let original_reports () =
       List.map (row false) Statements.all)
     (Tn_model.make ())
 
-(** All 90 reports: the seven originals, then the fourteen first-expansion
-    statements in DESIGN-spec family order (ban, admission, gossip-auth,
-    exec-tally, identity, then the consensus-ext and request-response
-    families), then the forty-two second-expansion statements in family order
-    (the four epoch families, then execution, exex, gossip, storage, primary,
-    worker and libp2p-discovery), then the twenty-seven third-expansion
-    statements over nine more consensus-side family models (the DAG commit
-    walk and its retention, the round-quorum aggregator, the proposer's
-    parent handoff, certificate-fetch verification state, the causal
-    pending-release handoff, and the three request-admission families for
-    epoch records, sync streams and parent claims). Each family call builds
-    and checks its own model. *)
+(** All 189 reports: the seven statements of the shared {!Tn_model} first, then
+    each isolated family's [reports] in the order the family calls are listed
+    below - 182 statements over 68 family models, 69 models in all. Each family
+    call builds and checks its own model. *)
 let all () =
   List.concat
     [

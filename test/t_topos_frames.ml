@@ -29,7 +29,7 @@
     nothing. The reason the preorder case is sound is that a preorder is still
     a THIN category, so parallel [W]-arrows are still unique and presheaf
     restriction is still path-independent (DESIGN sec.1); antisymmetry only
-    buys skeletality. And [is_true] is MEMBERSHIP (sieve.ml:21) rather than
+    buys skeletality. And [is_true] is MEMBERSHIP (sieve.ml:22) rather than
     sieve equality, so the reduction gate is insensitive to the difference -
     which is why all twelve preorder models pass their own
     [test/t_<family>_topos.ml] reduction differential.
@@ -47,7 +47,7 @@ type row = {
 }
 
 (** Build one row. The state and view modules arrive as first-class modules
-    so that all 27 instances of the frame functor can live in one list. The
+    so that all 69 instances of the frame functor can live in one list. The
     atom label is irrelevant to the frame, so it is the constant [false]. *)
 let row_of (type s) (type v) name
     (stm : (module System.ORDERED with type t = s))

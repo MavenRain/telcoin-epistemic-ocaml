@@ -1,5 +1,6 @@
-(** Sieve-graded [Ω] over the reachability poset (DESIGN sec.1). Every
-    operation is total; matches are exhaustive. *)
+(** Sieve-graded [Ω] over the reachability order (a poset for 57 of the 69
+    models, a preorder for the other 12; [W] is thin either way) (DESIGN
+    sec.1). Every operation is total; matches are exhaustive. *)
 
 module Make (F : Frame.S) = struct
   type sieve = F.State_set.t

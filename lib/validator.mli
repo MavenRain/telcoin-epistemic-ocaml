@@ -5,10 +5,12 @@
     Keeping the type a bare finite sum gives every consumer exhaustive
     matching over the committee.
 
-    The isolated family models predate the ten-member committee and keep
-    their original four-member semantics with module-local rosters and
-    thresholds; [all], [quorum] and [support] describe the full committee
-    the {!Tn_model} abstraction runs on. *)
+    Each isolated family model fixes its own module-local roster and
+    thresholds: twenty-three of them - the earliest families and the latest
+    generation alike - keep a four-member committee with f = 1 rather than
+    this ten-member one, leaving [V4] .. [V9] idle and outside the family's
+    roster; [all], [quorum] and [support] describe the full committee the
+    {!Tn_model} abstraction runs on. *)
 
 type t = V0 | V1 | V2 | V3 | V4 | V5 | V6 | V7 | V8 | V9
 

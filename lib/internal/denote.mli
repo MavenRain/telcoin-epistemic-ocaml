@@ -4,7 +4,7 @@
     changing one line, with no change to the statement or test wiring) plus
     the topos-internal graded surface.
 
-    ALL 27 models in the library are instances of this functor, and each is
+    ALL 69 models in the library are instances of this functor, and each is
     differentially gated against {!System} at every reachable world:
     test/t_reduction.ml for the shared model, test/t_<family>_topos.ml for
     each family.

@@ -102,7 +102,7 @@
     recreation because it empties in place (mdbx/database.rs:81-83,
     [self.inner.clear_db(self.get_dbi::<T>()?)]).
 
-    COMPONENTS (eleven fields; the pristine reachable graph is exactly 38
+    COMPONENTS (eleven fields; the pristine reachable graph is exactly 34
     states). One Epoch-hint table pair is tracked - [Certificates] and its round
     index [CertificateDigestByRound], the two that [CertificateStore::clear]
     groups - plus one Cache-hint table standing for [NodeBatchesCache] /

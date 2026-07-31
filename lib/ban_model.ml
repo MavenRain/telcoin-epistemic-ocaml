@@ -1,7 +1,7 @@
 (** Peer-scoring/ban family: the fatal content-fault charge routing and the
     committee TrustBasis exemption of telcoin-network's libp2p peer manager,
     abstracted to a finite interpreted system on the shared kernel
-    {!System.Make}.
+    {!Denote.Make}.
 
     Role mapping of the four {!Validator.t} slots: [V0], [V1], [V2] are the
     HONEST knowledge agents - their view is exactly their peer-manager local

@@ -60,14 +60,16 @@ module type S = sig
 
   val leq : 'a t -> state -> state -> bool
   (** [leq t s u]: [s ⊑ u], i.e. [u] is reachable from [s] (future). The
-      partial order of [W] reversed from reachability (DESIGN sec.1). *)
+      order of [W] reversed from reachability - a partial order on the 57
+      poset models, a preorder on the 12 whose reachability has a genuine
+      cycle (DESIGN sec.1). *)
 
   val up : 'a t -> state -> State_set.t
   (** [↑s = {u | s ⊑ u}], the finite future cone; the carrier of [Ω(s)]
       (DESIGN sec.1, [omega_val] linear analogue's [{n,n+1,…}]). *)
 
   val view_of : 'a t -> Validator.t -> state -> view
-  (** [f_i(s) = local_of s i] ([tn_model.ml:535]): the projection onto
+  (** [f_i(s) = local_of s i] ([tn_model.ml:567]): the projection onto
       validator [i]'s local state. *)
 
   val fibre : 'a t -> Validator.t -> state -> State_set.t
@@ -86,9 +88,10 @@ module type S = sig
 
   val certify_functorial : 'a t -> unit Comp_cat.Res.t
   (** The [temporal/trees.ml:13] [commutes ~upto] analogue: certifies that
-      [⊑] is a genuine finite poset (reflexive + transitive), so all parallel
-      [W]-arrows are equal and every presheaf's restriction is
-      path-independent. [Comp_cat.Err.Not_universal] if it is not. *)
+      [⊑] is a genuine finite poset (reflexive, transitive and
+      antisymmetric), so all parallel [W]-arrows are equal and every
+      presheaf's restriction is path-independent.
+      [Comp_cat.Err.Not_universal] if it is not. *)
 end
 
 module Make (State : System.ORDERED) (View : System.ORDERED) :

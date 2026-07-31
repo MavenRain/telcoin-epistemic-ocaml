@@ -1,5 +1,5 @@
-(** The categorical laws of the topos layer, run on every one of the 27 real
-    model frames (DESIGN sec.6 gate 5).
+(** The categorical laws of the topos layer, run on every one of the 69 real
+    model frames (DESIGN sec.6 gate 7).
 
     test/t_categorical.ml pins the same laws on a synthetic four-state frame
     where each is paired with a deliberately wrong operator. This suite is

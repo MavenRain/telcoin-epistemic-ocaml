@@ -7,7 +7,7 @@
       itself everywhere (a pending request is expired or served, a serve
       finishes and releases its permit, a sync exchange is admitted, cleared
       and released), so reachability has cycles and is not antisymmetric. That
-      is the documented four-of-twenty-seven case, and a preorder is still a
+      is the documented twelve-of-sixty-nine case, and a preorder is still a
       thin category, so presheaf restriction is still path-independent. The
       classification is pinned negatively below, exactly as
       test/t_admission_topos.ml does, so t_topos_frames.ml is pinning a live

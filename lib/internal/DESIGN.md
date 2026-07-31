@@ -7,17 +7,18 @@ as the internal logic of a genuine presheaf topos, leveraging
 refounded Lamport TLA as the internal logic of the topos of trees.
 
 **STATUS: BUILT, AND APPLIED TO EVERY MODEL.** All eight bespoke modules (§5)
-exist under `lib/internal/`; **all 27 models** in the library instantiate
+exist under `lib/internal/`; **all 69 models** in the library instantiate
 `Denote.Make` as their `Checker`, not only the shared `Tn_model`; and all seven
 test gates of §6 are green. The imperative voice below is retained as the spec
 of record; where an instruction has since been carried out this document says
 so inline.
 
-Generalising the layer from 1 model to 27 was not a formality: it falsified the
-§4 reflection rule as originally written (see the correction box in §4) by
-exhibiting concrete worlds where `is_true ∘ grade ≠ sat`. The shared model
-could not have found it. That is the single most important fact in this
-document's history and it is why §6 now has a per-family gate.
+Generalising the layer from 1 model to 27, and then from 27 to 69, was not a
+formality: it falsified the §4 reflection rule as originally written (see the
+correction box in §4) by exhibiting concrete worlds where
+`is_true ∘ grade ≠ sat`. The shared model could not have found it. That is the
+single most important fact in this document's history and it is why §6 now has
+a per-family gate.
 
 Repo: `~/Documents/telcoin-epistemic-ocaml`; own opam switch
 `telcoin-epistemic-ocaml` (OCaml 5.3.0, dune, alcotest, comp_cat). Build with
@@ -75,7 +76,8 @@ change along the transition span, and `AG`/`AF`/`C_G` are μ/ν fixpoints
    `valid_E ⟺ valid_checker` and `satisfiable_E ⟺ satisfiable`. **Therefore S1–S7
    re-verify and every confirm-by-mutation pin still flips.** This is proven
    operator-by-operator in §4, and PINNED by an executable differential test
-   `is_true ∘ grade = sat` over pristine + all 6 model mutants (§6).
+   `is_true ∘ grade = sat` over pristine + all 6 `tn_model` mutants, and per
+   family over all 69 models under all 189 mutation pins (§6).
 
 4. **Reflection is vacuous on S1–S7, so it needs a synthetic witness.** Every
    `Implies`-antecedent and `Not`-argument across S1–S7 is a crisp Boolean of
@@ -92,9 +94,9 @@ change along the transition span, and `AG`/`AF`/`C_G` are μ/ν fixpoints
 **Base category `W`.** Objects = `reach` (`system.ml:27-46`). Order `s ≤ t` iff
 `s →* t` under `step spec` (successors, terminals self-looped, `system.ml:24-25`).
 This is a genuine finite PARTIAL order for this model: phases strictly advance
-(`phase_index`, `tn_state.ml:155-164`), per-validator locals only grow
-(`tn_state.ml:183`; `label` monotone `tn_model.ml:447-499`), the only cycle is
-the `Done` self-loop on a single state (`tn_model.ml:400`). `W := (reach, ⊑)` is
+(`phase_index`, `tn_state.ml:163-170`), per-validator locals only grow
+(`tn_state.ml:183`; `label` monotone `tn_model.ml:475-527`), the only cycle is
+the `Done` self-loop on a single state (`tn_model.ml:428`). `W := (reach, ⊑)` is
 this order REVERSED. Finite (`≤ |reach|²` arrows). The **one-step span** is kept
 as separate structure (never recovered from `⊑`): `N = {(s,s') | s' ∈ step s}`,
 `π₁,π₂ : N → reach` — it powers `AX/EX` (§2). (In this model `→` happens to equal
@@ -111,16 +113,19 @@ composition; path-independence holds (poset ⇒ all parallel arrows equal) and i
 checked by a finite `commutes ~upto` certificate (`trees.ml:13` analogue).
 
 > **Scope note (2026-07-26).** The paragraph above is about `tn_model`, whose
-> reachability really is a partial order. Of the 27 models now carrying this
-> layer, 23 certify as posets and 4 (`admission`, `epoch_close`, `epoch_sync`,
-> `exex_fanout`) are PREORDERS: they model mechanisms that undo themselves, so
-> two distinct states are mutually reachable and `certify_functorial` refuses
-> antisymmetry. This does not break anything here. Path-independence needs only
-> that `W` be THIN (at most one arrow per ordered pair), which a preorder
-> satisfies; antisymmetry additionally makes `W` skeletal, i.e. no two distinct
-> objects isomorphic. `[W^op, Set]` is a presheaf topos over any small category,
-> and because `is_true` is membership (`sieve.ml`) rather than sieve equality,
-> the reduction is insensitive to the difference. `t_topos_frames.ml` pins which
+> reachability really is a partial order. Of the 69 models now carrying this
+> layer, 57 certify as posets and 12 (`admission`, `epoch_close`, `epoch_sync`,
+> `exex_fanout`, `archive_hash_index`, `peer_temp_ban`, `record_serve_pool`,
+> `stream_slot_tenure`, `stream_sync_capability`, `tel_supply_ledger`,
+> `vote_cache_retry`, `worker_stream_quota`) are PREORDERS: they model
+> mechanisms that undo themselves, so two distinct states are mutually
+> reachable and `certify_functorial` refuses antisymmetry. This does not break
+> anything here. Path-independence needs only that `W` be THIN (at most one
+> arrow per ordered pair), which a preorder satisfies; antisymmetry
+> additionally makes `W` skeletal, i.e. no two distinct objects isomorphic.
+> `[W^op, Set]` is a presheaf topos over any small category, and because
+> `is_true` is membership (`sieve.ml`) rather than sieve equality, the
+> reduction is insensitive to the difference. `t_topos_frames.ml` pins which
 > models are in which class.
 Terminal `1`: `sections s = [()]`.
 
@@ -187,7 +192,7 @@ computes a right Kan extension that is NOT `knows`, and `K_i` breaks
 
 For validator `i`: `f_i : reach → V_i`, `f_i(s) = local_of s i`
 (the spec's `view` in `tn_model.ml`; `Checker = Denote.Make (Tn_state)
-(Tn_state.Local)` there, and `Denote.Make (State) (View)` in each of the 26
+(Tn_state.Local)` there, and `Denote.Make (State) (View)` in each of the 68
 family models, with `System.Make` retained as the reduction oracle for all of
 them). `~_i =`
 kernel of `f_i` (an equivalence relation). The three base-change adjoints along
@@ -229,17 +234,18 @@ at BOTH arguments of every `Implies` (structural, like `temporal_eval`
 subobject-level operator (that is a no-op on persistent atoms and would leave
 `¬/→` hereditary).
 
-> **Correction, 2026-07-26 (found by generalising the layer to all 27 models).**
-> The first build reflected only the `Implies`-ANTECEDENT, and §4 specified only
-> that. With an unreflected consequent, `imp` reads `φ → ψ` at `s` as
-> "if `φ` at `s` then `ψ` at EVERY world of `↑s`", which coincides with the
-> classical reading only when `⟦ψ⟧` happens to be future-closed. Every
-> `tn_model` atom is monotone (§1: `label` monotone), so the shared model could
-> not see it and `t_reduction.ml` was green for 141 worlds × 7 mutants. It is
-> false as soon as a model has an atom that can go false again: a ban that
-> expires, a pending map that is released, a fetch that completes. Four family
-> models (`own_durable`, `pending_gc`, `stall`, plus the preorder frames)
-> exhibited concrete disagreeing worlds. Reflecting BOTH arguments restores the
+> **Correction, 2026-07-26 (found by generalising the layer to all models, 27
+> at the time; 69 now).** The first build reflected only the
+> `Implies`-ANTECEDENT, and §4 specified only that. With an unreflected
+> consequent, `imp` reads `φ → ψ` at `s` as "if `φ` at `s` then `ψ` at EVERY
+> world of `↑s`", which coincides with the classical reading only when `⟦ψ⟧`
+> happens to be future-closed. Every `tn_model` atom is monotone (§1: `label`
+> monotone), so the shared model could not see it and `t_reduction.ml` was
+> green for 141 worlds × 7 mutants. It is false as soon as a model has an atom
+> that can go false again: a ban that expires, a pending map that is released,
+> a fetch that completes. Family models carrying such an atom - `own_durable`,
+> `pending_gc`, `stall`, and preorder frames known at that round - exhibited
+> concrete disagreeing worlds. Reflecting BOTH arguments restores the
 > reduction: with `A,B ∈ {↑s, ∅}`, `is_true (imp A B) = (φ(s) ⟹ ψ(s))` by the
 > top/bot laws, exactly the Boolean reading.
 
@@ -253,7 +259,7 @@ subobject-level operator (that is a no-op on persistent atoms and would leave
 (induction over `Formula.t`; `is_true` is a homomorphism except at `imp/neg`,
 where `classical` restores it via the top/bot laws `imp(⊤,T)=T`, `imp(⊥,T)=⊤`,
 `neg(⊤)=⊥`, `neg(⊥)=⊤`). Define `valid_E φ := is_true (grade φ w0)` at the single
-initial world `w0 = initial` (`tn_model.ml:537`), `= (w0 ∈ sat φ) = valid sys φ`
+initial world `w0 = initial` (`tn_state.ml:245`), `= (w0 ∈ sat φ) = valid sys φ`
 (`system.ml:145`). Hence `prove`/`prove_nonvacuous` (`denote.ml`) return `Ok`
 exactly when the current kernel does: **S1–S7 re-verify unchanged, and each stays
 refuted under its model mutation.**
@@ -261,7 +267,7 @@ refuted under its model mutation.**
 Where reflection is load-bearing vs no-op: on S1–S7 it is a NO-OP (all
 antecedents/¬-args crisp two-valued), so on the shared model it is exercised
 only by the synthetic probe (§0.1.4, §6). That is a fact about `tn_model`, not
-about the bridge: on all 26 family models the per-family gate's
+about the bridge: on all 68 family models the per-family gate's
 `reflection_load_bearing` flag is TRUE, i.e. deleting `classical` changes a
 verdict on the family's own formulas. The synthetic probe is still needed for
 `tn_model` and is still the confirm-by-mutation witness of the deletion.
@@ -313,9 +319,9 @@ black-box internal-logic engine (its presheaf internal logic is unimplemented).
 DONE: `Tn_model.Checker = Denote.Make (Tn_state) (Tn_state.Local)`
 (`tn_model.ml`); `spec_of`/`Statements` and the test wiring were unchanged.
 
-DONE (2026-07-26): **ALL 27 models** now instantiate `Denote.Make`, not just
+DONE (2026-07-26): **ALL 69 models** now instantiate `Denote.Make`, not just
 the shared one. Each `lib/<family>_model.ml` carries
-`module Checker = Denote.Make (State) (View)`, so every one of the 63
+`module Checker = Denote.Make (State) (View)`, so every one of the 189
 statements is proved through the topos denotation. The re-point is a drop-in
 because `Denote.Make` exposes `System.Make`'s interface plus the graded
 surface.
@@ -368,27 +374,30 @@ license inherited.
    convergence bound (`≤ |reach|`); the μ-vs-ν seed correctness (seed `AF` at ⊤
    instead of ∅ ⇒ `AF` collapses to ⊤, a paired test must catch it).
 
-5. **Per-family reduction gates** (`test/topos_gate.ml` + 26 × `t_<family>_topos.ml`).
+5. **Per-family reduction gates** (`test/topos_gate.ml` + 68 × `t_<family>_topos.ml`).
    Gate 2 generalised: the same `is_true ∘ grade = System.sat` differential, run
    for every family over its own statements' subformulas plus a battery spanning
    every `Formula.t` constructor, at every reachable world, under pristine and
    every mutation. This is the gate that found the incomplete `Implies` repair
    (§4 correction); the shared model structurally could not.
 6. **Frame classification** (`test/t_topos_frames.ml`). `Frame.certify_functorial`
-   over all 27 models, with the outcome PINNED in both directions: 23 frames are
-   posets, 4 (`admission`, `epoch_close`, `epoch_sync`, `exex_fanout`) are
-   preorders, because they model mechanisms that undo themselves and so make two
-   distinct states mutually reachable. A preorder is still a thin category, so
-   parallel `W`-arrows are still unique, presheaf restriction is still
-   path-independent, and `[W^op, Set]` is still a topos; antisymmetry buys
-   skeletality, not soundness, and the reduction gate is green on all four. The
-   test fails if a frame changes class in either direction.
+   over all 69 models, with the outcome PINNED in both directions: 57 frames are
+   posets, 12 (`admission`, `epoch_close`, `epoch_sync`, `exex_fanout`,
+   `record_serve_pool`, `stream_slot_tenure`, `vote_cache_retry`,
+   `worker_stream_quota`, `tel_supply_ledger`, `archive_hash_index`,
+   `peer_temp_ban`, `stream_sync_capability`) are preorders, because they model
+   mechanisms that undo themselves and so make two distinct states mutually
+   reachable. A preorder is still a thin category, so parallel `W`-arrows are
+   still unique, presheaf restriction is still path-independent, and
+   `[W^op, Set]` is still a topos; antisymmetry buys skeletality, not
+   soundness, and the reduction gate is green on all twelve. The test fails if
+   a frame changes class in either direction.
 7. **Categorical laws on the REAL frames** (`test/topos_laws.ml` +
    `t_topos_laws.ml`). Gate 4 asks whether the operators obey their laws; this
    asks whether the frames the library actually reasons over are legitimate
    homes for them. The Galois adjunctions, the `K_i` S5 comonad laws, `C_G`
    convergence, the `AX`/`EX` duality and the `Sub(1_E)` Heyting laws, run over
-   all 27 models with witness subsets drawn from each model's own statements,
+   all 69 models with witness subsets drawn from each model's own statements,
    plus non-degeneracy counters so a frame on which the operators do nothing
    cannot buy a green verdict. Witness lists are capped (12, and 3 for the `C_G`
    fixpoint laws) and the cap is REPORTED in the verdict, not applied silently.
@@ -417,16 +426,16 @@ alcotest warmup; run `./_build/default/test/t_NAME.exe` directly, or re-run.
 - **The reduction needs an EXECUTABLE differential gate** (`is_true ∘ grade =
   sat`), not just an operator-by-operator argument (P6 HIGH).
 - **One model is not enough to exercise that gate** (found 2026-07-26, by
-  generalising the layer from 1 model to 27). Every `tn_model` atom is
-  monotone, so the incomplete `Implies` repair (§4 correction) was invisible on
-  the shared model across 141 worlds × 259 formulas × 7 mutants. The blindness
-  was structural, not statistical: no quantity of additional `tn_model`
-  formulas would have exposed it, because the counterexample needs an atom that
-  can go false again. A differential gate is only as strong as the diversity of
-  the models it runs on.
-- **Antisymmetry is not a soundness precondition** (same round). Four family
+  generalising the layer from 1 model to 27; the layer now covers 69). Every
+  `tn_model` atom is monotone, so the incomplete `Implies` repair (§4
+  correction) was invisible on the shared model across 141 worlds × 259
+  formulas × 7 mutants. The blindness was structural, not statistical: no
+  quantity of additional `tn_model` formulas would have exposed it, because the
+  counterexample needs an atom that can go false again. A differential gate is
+  only as strong as the diversity of the models it runs on.
+- **Antisymmetry is not a soundness precondition** (same round). Twelve family
   frames are preorders, not posets. A preorder is still thin, so parallel
   `W`-arrows are still unique and §1's path-independence argument survives;
-  antisymmetry buys skeletality. The reduction gate is green on all four, so
-  they carry the denotation like the other 23, and `t_topos_frames.ml` pins the
+  antisymmetry buys skeletality. The reduction gate is green on all twelve, so
+  they carry the denotation like the other 57, and `t_topos_frames.ml` pins the
   classification instead of excluding them.

@@ -71,7 +71,7 @@ type statement = {
 (** Atom injection shorthand. *)
 let atom a = Formula.Atom a
 
-(** S1 - gas-ceiling-refusal-is-a-committee-wide-verdict-but-not-a-storage-fact
+(** S1 - gas-ceiling-refusal-is-a-committee-verdict-not-a-storage-fact
     [security].
 
     Trigger: the batch's declared gas limits sum above the ceiling and the
@@ -209,7 +209,7 @@ let s_2 =
     antecedent = Formula.And (atom Content_carries_blob, atom Reported_1);
   }
 
-(** S3 - relay-preserves-the-author-digest-while-the-receipt-stamp-stays-private
+(** S3 - relay-keeps-the-author-digest-while-the-receipt-stamp-stays-private
     [safety].
 
     Conjunct A - [AG (key = digest(stored))]: every copy of the batch in a

@@ -145,7 +145,7 @@ let s1 =
     antecedent = Formula.And (atom Heal_ran, atom Heal_dropped_output);
   }
 
-(** S2 - read-only-open-enforces-the-three-file-agreement-that-append-open-only-repairs
+(** S2 - read-only-open-enforces-the-three-file-agreement-append-open-only-repairs
     [safety].
 
     Conjunct A - [AG (open-static-ok -> files-consistent)]: the mode every
@@ -210,7 +210,7 @@ let s2 =
     antecedent = atom Static_open_served;
   }
 
-(** S3 - a-published-pack-error-reveals-the-index-fell-behind-but-not-whether-the-pack-fail-stopped
+(** S3 - published-pack-error-reveals-the-index-gap-not-whether-the-pack-fail-stopped
     [security].
 
     Conjunct A - [AG (error-seen -> K_V0 (data-ahead-of-index))]: when the

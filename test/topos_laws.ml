@@ -30,7 +30,7 @@
 
     The verdict type is deliberately monomorphic ([laws] is an association
     list, not a record of fields), so one checker can consume the verdicts of
-    all 27 models even though each is a different functor instance. *)
+    all 69 models even though each is a different functor instance. *)
 
 open Telcoin_epistemic
 

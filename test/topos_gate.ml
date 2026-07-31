@@ -8,15 +8,17 @@
     makes it meaningful is that the denotation computes what the original
     exact checker ({!Telcoin_epistemic.System}) computes, at every reachable
     world. This module packages the three per-family obligations that make
-    the claim checkable, in the same shape for all 27 models:
+    the claim checkable, in the same shape for all 69 models:
 
     - {b poset}: [Frame.certify_functorial] on the family's own reachable
       graph: [⊑] reflexive, transitive and ANTISYMMETRIC (DESIGN sec.1). This
-      is a CLASSIFICATION, not a precondition. 23 of the 27 frames certify;
-      4 are preorders because they model mechanisms that undo themselves, and
-      a preorder is still a thin category, so parallel [W]-arrows are still
-      unique and presheaf restriction is still path-independent. Those four
-      omit this case and are pinned instead by test/t_topos_frames.ml.
+      is a CLASSIFICATION, not a precondition. 57 of the 69 frames certify;
+      12 are preorders because they model mechanisms that undo themselves,
+      and a preorder is still a thin category, so parallel [W]-arrows are
+      still unique and presheaf restriction is still path-independent. Those
+      twelve pin this case NEGATIVELY instead (each carries a
+      [preorder-not-poset] case asserting [v.G.poset = false]), and the whole
+      split is pinned by test/t_topos_frames.ml.
     - {b reduction}: the executable differential gate of DESIGN sec.6 gate 2,
       [is_true (grade φ s) = (s ∈ System.sat φ)] at every reachable world, for
       every subformula of every statement of the family plus a spanning

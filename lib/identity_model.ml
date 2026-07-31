@@ -1,6 +1,6 @@
 (** The signed peer-record identity binding of telcoin-network, abstracted
     to an isolated finite interpreted system on the shared kernel
-    {!System.Make}: an honest node confirms a remote validator's
+    {!Denote.Make}: an honest node confirms a remote validator's
     (BLS key, libp2p PeerId) binding only through a signature-verified
     NodeRecord, so a confirmed identity carries knowledge of the remote
     signing act.

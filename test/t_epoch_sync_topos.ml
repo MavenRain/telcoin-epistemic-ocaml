@@ -6,9 +6,9 @@
     This family has NO poset case. Its reachability relation is a preorder,
     not a poset - it models a mechanism that undoes itself, so two distinct
     states are mutually reachable - and that classification is pinned once
-    for all 27 models in test/t_topos_frames.ml rather than repeated here.
-    A preorder is still a thin category, so the presheaf topos over it is
-    intact; what the gate below establishes is the thing that actually
+    for all 69 models in test/t_topos_frames.ml, and re-pinned negatively
+    below. A preorder is still a thin category, so the presheaf topos over
+    it is intact; what the gate below establishes is the thing that actually
     matters, that the denotation computes what {!System} computes at every
     reachable world.
 

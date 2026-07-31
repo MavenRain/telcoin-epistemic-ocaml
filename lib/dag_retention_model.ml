@@ -85,9 +85,9 @@
     [Validator.V1], [Validator.V2] and [Validator.V3] stand for the peer
     authorities A, C and D, whose local state this family does not model at
     all, and [Validator.V4] .. [Validator.V9] are outside this family's
-    four-member roster (the isolated families keep their original four-member
-    semantics, validator.mli:8-11); all nine carry the constant blank view
-    [View_idle] and NEVER appear under [K].
+    four-member roster (this family keeps the original four-member semantics;
+    see validator.mli); all nine carry the constant blank view [View_idle] and
+    NEVER appear under [K].
 
     WHY THE VIEW PROJECTION IS WHAT IT IS. Two facts are outside the struct and
     outside every message V0 has received:
